@@ -103,11 +103,11 @@ func readNumberToken(line string, currentIndex int) (domain.Token, int, error) {
 		} else if char == '\t' || char == '\n' {
 			return domain.Token{Type: domain.Number, Value: result}, currentIndex, nil
 		} else {
-			break
+			return domain.Token{}, currentIndex, fmt.Errorf("invalid number")
 		}
 	}
 
-	return domain.Token{}, currentIndex, fmt.Errorf("invalid number")
+	return domain.Token{Type: domain.Number, Value: result}, currentIndex, nil
 }
 
 func readAnotherToken(line string, currentIndex int) (domain.Token, int, error) {
@@ -118,30 +118,33 @@ func readAnotherToken(line string, currentIndex int) (domain.Token, int, error) 
 		char := line[currentIndex]
 		result += string(char)
 		if char == '\t' || char == '\n' {
-			if len(result) == 1 {
-				operatorToken, err := parseToOperator(result)
-				if err != nil {
-					delimeterOperator, err := parseToDelimiter(result)
-					if err != nil {
-						return domain.Token{Type: domain.Identifier, Value: result}, currentIndex, nil
-					}
-
-					return delimeterOperator, currentIndex, nil
-				}
-				return operatorToken, currentIndex, nil
-			} else {
-				keywordToken, err := parseToKeyword(result)
-				if err != nil {
-					return domain.Token{}, currentIndex, err
-				}
-				return keywordToken, currentIndex, nil
-			}
+			return parseAnother(result, currentIndex)
 		}
 
 		currentIndex++
 	}
 
-	return domain.Token{}, currentIndex, fmt.Errorf("invalid token")
+	return parseAnother(result, currentIndex)
+}
+
+func parseAnother(result string, currentIndex int) (domain.Token, int, error) {
+	keywordToken, err := parseToKeyword(result)
+	if err != nil {
+		operatorToken, err := parseToOperator(result)
+		if err != nil {
+			delimeterOperator, err := parseToDelimiter(result)
+			if err != nil {
+				identifierToken, err := parseIdentifier(result)
+				if err != nil {
+					return domain.Token{}, currentIndex, err
+				}
+				return identifierToken, currentIndex, nil
+			}
+			return delimeterOperator, currentIndex, nil
+		}
+		return operatorToken, currentIndex, nil
+	}
+	return keywordToken, currentIndex, nil
 }
 
 func parseToKeyword(value string) (domain.Token, error) {
@@ -215,4 +218,12 @@ func parseToDelimiter(value string) (domain.Token, error) {
 	}
 
 	return domain.Token{}, fmt.Errorf("invalid delimiter")
+}
+
+func parseIdentifier(value string) (domain.Token, error) {
+	if len(value) != 1 {
+		return domain.Token{}, fmt.Errorf("invalid token: %s", value)
+	}
+
+	return domain.Token{Type: domain.Identifier, Value: value}, nil
 }
