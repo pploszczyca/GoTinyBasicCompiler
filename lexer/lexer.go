@@ -3,8 +3,10 @@ package lexer
 import (
 	"GoTinyBasicCompiler/domain"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 type Lexer interface {
@@ -22,11 +24,15 @@ func (l *lexer) Lex(inputCode string) ([]domain.Token, error) {
 	lines := strings.Split(inputCode, "\n")
 	var result []domain.Token
 
-	for _, line := range lines {
+	for i, line := range lines {
 		tokens, err := parseLine(line)
 		if err != nil {
 			return nil, err
 		}
+		if i != len(lines)-1 {
+			tokens = append(tokens, domain.Token{Type: domain.Cr})
+		}
+
 		result = append(result, tokens...)
 	}
 
@@ -41,18 +47,21 @@ func parseLine(line string) ([]domain.Token, error) {
 
 	for _, value := range values {
 		token, err := parseValue(value)
-		if err != nil {
+		log.Printf("token: %v", token)
+		if err != nil && err.Error() != "empty token" {
+			log.Printf("error: %v", err)
 			return nil, err
 		}
 		tokens = append(tokens, token)
 	}
 
-	tokens = append(tokens, domain.Token{Type: domain.Cr})
-
 	return tokens, nil
 }
 
 func parseValue(value string) (domain.Token, error) {
+	if value == "" {
+		return domain.Token{}, fmt.Errorf("empty token")
+	}
 	if isNumber(value) {
 		return domain.Token{Type: domain.Number, Value: value}, nil
 	}
@@ -123,7 +132,11 @@ func parseValue(value string) (domain.Token, error) {
 }
 
 func isIdentifier(s string) bool {
-	return !isNumber(s) && !isString(s)
+	if len(s) != 1 {
+		return false
+	}
+	r := rune(s[0])
+	return unicode.IsUpper(r) && unicode.IsLetter(r)
 }
 
 func isNumber(s string) bool {
