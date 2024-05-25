@@ -84,7 +84,7 @@ func readStringToken(line string, currentIndex int) (domain.Token, int, error) {
 	for currentIndex < len(line) {
 		result += string(line[currentIndex])
 		if line[currentIndex] == '"' {
-			return domain.Token{Type: domain.String, Value: result}, currentIndex + 1, nil
+			return domain.Token{Type: domain.String, Value: result}, currentIndex, nil
 		}
 		currentIndex++
 	}

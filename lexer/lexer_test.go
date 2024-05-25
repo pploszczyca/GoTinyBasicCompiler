@@ -35,6 +35,61 @@ func TestLexer(t *testing.T) {
 		}
 	})
 
+	t.Run("returns tokens for more complicated code", func(t *testing.T) {
+		inputCode := `10 PRINT "ENTER FIRST NUMBER: "
+20 INPUT A
+30 PRINT "ENTER SECOND NUMBER: "
+40 INPUT B
+50 LET C = A + B
+60 PRINT "THE SUM IS: "; C
+70 END`
+		expectedTokens := []domain.Token{
+			{Type: domain.Number, Value: "10"},
+			{Type: domain.Print},
+			{Type: domain.String, Value: "\"ENTER FIRST NUMBER: \""},
+			{Type: domain.Cr},
+			{Type: domain.Number, Value: "20"},
+			{Type: domain.Input},
+			{Type: domain.Identifier, Value: "A"},
+			{Type: domain.Cr},
+			{Type: domain.Number, Value: "30"},
+			{Type: domain.Print},
+			{Type: domain.String, Value: "\"ENTER SECOND NUMBER: \""},
+			{Type: domain.Cr},
+			{Type: domain.Number, Value: "40"},
+			{Type: domain.Input},
+			{Type: domain.Identifier, Value: "B"},
+			{Type: domain.Cr},
+			{Type: domain.Number, Value: "50"},
+			{Type: domain.Let},
+			{Type: domain.Identifier, Value: "C"},
+			{Type: domain.Equal},
+			{Type: domain.Identifier, Value: "A"},
+			{Type: domain.Plus},
+			{Type: domain.Identifier, Value: "B"},
+			{Type: domain.Cr},
+			{Type: domain.Number, Value: "60"},
+			{Type: domain.Print},
+			{Type: domain.String, Value: "\"THE SUM IS: \""},
+			{Type: domain.Semicolon},
+			{Type: domain.Identifier, Value: "C"},
+			{Type: domain.Cr},
+			{Type: domain.Number, Value: "70"},
+			{Type: domain.End},
+			{Type: domain.Eof},
+		}
+
+		tokens, err := lexer.Lex(inputCode)
+
+		if err != nil {
+			t.Errorf("error should be nil, but got %v", err)
+		}
+
+		if !reflect.DeepEqual(tokens, expectedTokens) {
+			t.Errorf("expected %v, but got %v", expectedTokens, tokens)
+		}
+	})
+
 	keywordsTestCases := []struct {
 		inputCode     string
 		expectedToken domain.Token
