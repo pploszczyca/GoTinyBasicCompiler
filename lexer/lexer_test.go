@@ -11,15 +11,15 @@ func TestLexer(t *testing.T) {
 	lexer := NewLexer()
 
 	t.Run("returns tokens without error", func(t *testing.T) {
-		inputCode := "10\t20\n30\t40\n"
+		inputCode := "10 PRINT \"HELLO, WORLD!\"\n20 GOTO 10\n"
 		expectedTokens := []domain.Token{
 			{Type: domain.Number, Value: "10"},
+			{Type: domain.Print},
+			{Type: domain.String, Value: "\"HELLO, WORLD!\""},
+			{Type: domain.Cr},
 			{Type: domain.Number, Value: "20"},
-			{Type: domain.Cr},
-			{Type: domain.Number, Value: "30"},
-			{Type: domain.Number, Value: "40"},
-			{Type: domain.Cr},
-			{Type: domain.Cr},
+			{Type: domain.Goto},
+			{Type: domain.Number, Value: "10"},
 			{Type: domain.Eof},
 		}
 

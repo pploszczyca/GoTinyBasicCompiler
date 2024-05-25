@@ -3,8 +3,6 @@ package lexer
 import (
 	"GoTinyBasicCompiler/domain"
 	"fmt"
-	"log"
-	"strconv"
 	"strings"
 	"unicode"
 )
@@ -43,32 +41,110 @@ func (l *lexer) Lex(inputCode string) ([]domain.Token, error) {
 
 func parseLine(line string) ([]domain.Token, error) {
 	var tokens []domain.Token
-	values := strings.Split(line, "\t")
+	currentIndex := 0
+	for currentIndex < len(line) {
+		char := line[currentIndex]
 
-	for _, value := range values {
-		token, err := parseValue(value)
-		log.Printf("token: %v", token)
-		if err != nil && err.Error() != "empty token" {
-			log.Printf("error: %v", err)
-			return nil, err
+		if char == '"' {
+			token, newIndex, err := readStringToken(line, currentIndex)
+			if err != nil {
+				return nil, err
+			}
+			tokens = append(tokens, token)
+			currentIndex = newIndex
+		} else if unicode.IsDigit(rune(char)) {
+			token, newIndex, err := readNumberToken(line, currentIndex)
+			if err != nil {
+				return nil, err
+			}
+			tokens = append(tokens, token)
+			currentIndex = newIndex
+		} else {
+			token, newIndex, err := readAnotherToken(line, currentIndex)
+			if err != nil {
+				return nil, err
+			}
+			tokens = append(tokens, token)
+			currentIndex = newIndex
 		}
-		tokens = append(tokens, token)
+
+		if char == '\n' {
+			tokens = append(tokens, domain.Token{Type: domain.Cr})
+		}
+
+		currentIndex++
 	}
 
 	return tokens, nil
 }
 
-func parseValue(value string) (domain.Token, error) {
-	if value == "" {
-		return domain.Token{}, fmt.Errorf("empty token")
+func readStringToken(line string, currentIndex int) (domain.Token, int, error) {
+	result := "\""
+	currentIndex++
+	for currentIndex < len(line) {
+		result += string(line[currentIndex])
+		if line[currentIndex] == '"' {
+			return domain.Token{Type: domain.String, Value: result}, currentIndex + 1, nil
+		}
+		currentIndex++
 	}
-	if isNumber(value) {
-		return domain.Token{Type: domain.Number, Value: value}, nil
-	}
-	if isString(value) {
-		return domain.Token{Type: domain.String, Value: value}, nil
+	return domain.Token{}, currentIndex, fmt.Errorf("unterminated string")
+}
+
+func readNumberToken(line string, currentIndex int) (domain.Token, int, error) {
+	result := string(line[currentIndex])
+	currentIndex++
+	for currentIndex < len(line) {
+		char := line[currentIndex]
+
+		if unicode.IsDigit(rune(char)) {
+			result += string(char)
+			currentIndex++
+		} else if char == '\t' || char == '\n' {
+			return domain.Token{Type: domain.Number, Value: result}, currentIndex, nil
+		} else {
+			break
+		}
 	}
 
+	return domain.Token{}, currentIndex, fmt.Errorf("invalid number")
+}
+
+func readAnotherToken(line string, currentIndex int) (domain.Token, int, error) {
+	result := string(line[currentIndex])
+	currentIndex++
+
+	for currentIndex < len(line) {
+		char := line[currentIndex]
+		result += string(char)
+		if char == '\t' || char == '\n' {
+			if len(result) == 1 {
+				operatorToken, err := parseToOperator(result)
+				if err != nil {
+					delimeterOperator, err := parseToDelimiter(result)
+					if err != nil {
+						return domain.Token{Type: domain.Identifier, Value: result}, currentIndex, nil
+					}
+
+					return delimeterOperator, currentIndex, nil
+				}
+				return operatorToken, currentIndex, nil
+			} else {
+				keywordToken, err := parseToKeyword(result)
+				if err != nil {
+					return domain.Token{}, currentIndex, err
+				}
+				return keywordToken, currentIndex, nil
+			}
+		}
+
+		currentIndex++
+	}
+
+	return domain.Token{}, currentIndex, fmt.Errorf("invalid token")
+}
+
+func parseToKeyword(value string) (domain.Token, error) {
 	switch value {
 	case "PRINT":
 		return domain.Token{Type: domain.Print}, nil
@@ -94,6 +170,13 @@ func parseValue(value string) (domain.Token, error) {
 		return domain.Token{Type: domain.Run}, nil
 	case "END":
 		return domain.Token{Type: domain.End}, nil
+	}
+
+	return domain.Token{}, fmt.Errorf("invalid keyword")
+}
+
+func parseToOperator(value string) (domain.Token, error) {
+	switch value {
 	case "+":
 		return domain.Token{Type: domain.Plus}, nil
 	case "-":
@@ -114,6 +197,13 @@ func parseValue(value string) (domain.Token, error) {
 		return domain.Token{Type: domain.GreaterThanOrEqual}, nil
 	case "<>":
 		return domain.Token{Type: domain.NotEqual}, nil
+	}
+
+	return domain.Token{}, fmt.Errorf("invalid operator")
+}
+
+func parseToDelimiter(value string) (domain.Token, error) {
+	switch value {
 	case ",":
 		return domain.Token{Type: domain.Comma}, nil
 	case ";":
@@ -124,26 +214,5 @@ func parseValue(value string) (domain.Token, error) {
 		return domain.Token{Type: domain.RParen}, nil
 	}
 
-	if isIdentifier(value) {
-		return domain.Token{Type: domain.Identifier, Value: value}, nil
-	}
-
-	return domain.Token{}, fmt.Errorf("invalid token: %s", value)
-}
-
-func isIdentifier(s string) bool {
-	if len(s) != 1 {
-		return false
-	}
-	r := rune(s[0])
-	return unicode.IsUpper(r) && unicode.IsLetter(r)
-}
-
-func isNumber(s string) bool {
-	_, err := strconv.Atoi(s)
-	return err == nil
-}
-
-func isString(s string) bool {
-	return strings.HasPrefix(s, "\"") && strings.HasSuffix(s, "\"")
+	return domain.Token{}, fmt.Errorf("invalid delimiter")
 }
