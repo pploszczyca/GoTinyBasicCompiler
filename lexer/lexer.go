@@ -100,7 +100,7 @@ func readNumberToken(line string, currentIndex int) (domain.Token, int, error) {
 		if unicode.IsDigit(rune(char)) {
 			result += string(char)
 			currentIndex++
-		} else if char == '\t' || char == '\n' {
+		} else if char == ' ' || char == '\n' {
 			return domain.Token{Type: domain.Number, Value: result}, currentIndex, nil
 		} else {
 			return domain.Token{}, currentIndex, fmt.Errorf("invalid number")
@@ -116,11 +116,10 @@ func readAnotherToken(line string, currentIndex int) (domain.Token, int, error) 
 
 	for currentIndex < len(line) {
 		char := line[currentIndex]
-		result += string(char)
-		if char == '\t' || char == '\n' {
+		if char == ' ' || char == '\n' {
 			return parseAnother(result, currentIndex)
 		}
-
+		result += string(char)
 		currentIndex++
 	}
 

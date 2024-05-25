@@ -20,6 +20,7 @@ func TestLexer(t *testing.T) {
 			{Type: domain.Number, Value: "20"},
 			{Type: domain.Goto},
 			{Type: domain.Number, Value: "10"},
+			{Type: domain.Cr},
 			{Type: domain.Eof},
 		}
 
