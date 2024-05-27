@@ -2,6 +2,7 @@ package parser
 
 import (
 	"GoTinyBasicCompiler/domain"
+	"GoTinyBasicCompiler/parser/line"
 )
 
 type Parser interface {
@@ -18,7 +19,7 @@ type parser struct {
 
 func NewParser() Parser {
 	return &parser{
-		lineParser: NewLineParser(),
+		lineParser: line.NewLineParser(),
 	}
 }
 

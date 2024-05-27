@@ -1,17 +1,19 @@
-package parser
+package statement
 
 import (
 	"GoTinyBasicCompiler/domain"
+	"GoTinyBasicCompiler/parser"
+	"GoTinyBasicCompiler/parser/expressionList"
 	"fmt"
 )
 
 type statementParser struct {
-	expressionListParser NodeParser
+	expressionListParser parser.NodeParser
 }
 
-func NewStatementParser() NodeParser {
+func NewStatementParser() parser.NodeParser {
 	return &statementParser{
-		expressionListParser: NewExpressionListParser(),
+		expressionListParser: expressionList.NewExpressionListParser(),
 	}
 }
 

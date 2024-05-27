@@ -1,17 +1,19 @@
-package parser
+package line
 
 import (
 	"GoTinyBasicCompiler/domain"
+	"GoTinyBasicCompiler/parser"
+	"GoTinyBasicCompiler/parser/statement"
 	"fmt"
 )
 
 type lineParser struct {
-	statementParser NodeParser
+	statementParser parser.NodeParser
 }
 
-func NewLineParser() NodeParser {
+func NewLineParser() parser.NodeParser {
 	return &lineParser{
-		statementParser: NewStatementParser(),
+		statementParser: statement.NewStatementParser(),
 	}
 }
 
