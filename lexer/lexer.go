@@ -23,7 +23,7 @@ func (l *lexer) Lex(inputCode string) ([]domain.Token, error) {
 	var result []domain.Token
 
 	for i, line := range lines {
-		tokens, err := parseLine(line)
+		tokens, err := lexLine(line)
 		if err != nil {
 			return nil, err
 		}
@@ -39,7 +39,7 @@ func (l *lexer) Lex(inputCode string) ([]domain.Token, error) {
 	return result, nil
 }
 
-func parseLine(line string) ([]domain.Token, error) {
+func lexLine(line string) ([]domain.Token, error) {
 	var tokens []domain.Token
 	currentIndex := 0
 	for currentIndex < len(line) {
@@ -117,16 +117,16 @@ func readAnotherToken(line string, currentIndex int) (domain.Token, int, error) 
 	for currentIndex < len(line) {
 		char := line[currentIndex]
 		if char == ' ' || char == '\n' {
-			return parseAnother(result, currentIndex)
+			return lexAnother(result, currentIndex)
 		}
 		result += string(char)
 		currentIndex++
 	}
 
-	return parseAnother(result, currentIndex)
+	return lexAnother(result, currentIndex)
 }
 
-func parseAnother(result string, currentIndex int) (domain.Token, int, error) {
+func lexAnother(result string, currentIndex int) (domain.Token, int, error) {
 	keywordToken, err := parseToKeyword(result)
 	if err != nil {
 		operatorToken, err := parseToOperator(result)
