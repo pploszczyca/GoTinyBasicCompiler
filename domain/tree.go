@@ -10,6 +10,14 @@ type Node struct {
 	Children []*Node
 }
 
+func (n *Node) AddChild(child *Node) {
+	n.Children = append(n.Children, child)
+}
+
+func (n *Node) IsLeaf() bool {
+	return len(n.Children) == 0 && n.Token != Token{}
+}
+
 type NodeType int
 
 const (
@@ -19,4 +27,5 @@ const (
 	NumberNode
 	IdentifierNode
 	OperatorNode
+	LineNode
 )
