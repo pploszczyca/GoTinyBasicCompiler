@@ -33,6 +33,10 @@ func (l lineParser) Parse(tokens []domain.Token, currentIndex int) (*domain.Node
 
 	lineNode.AddChild(statementNode)
 
+	if currentIndex >= len(tokens) {
+		return nil, currentIndex, fmt.Errorf("expected CR token, but got EOF")
+	}
+
 	if tokens[currentIndex].Type != domain.Cr {
 		return nil, currentIndex, fmt.Errorf("expected CR token, but got %v", tokens[currentIndex].Type)
 	}
