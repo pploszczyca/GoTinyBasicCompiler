@@ -14,10 +14,10 @@ func TestParser_Parse(t *testing.T) {
 				return &domain.Node{}, currentIndex + 1, nil
 			},
 		}
-		p := NewParser(fakeLineParser)
 		tokens := []domain.Token{{}, {}, {}}
 		expectedNodes := []*domain.Node{{}, {}, {}}
 
+		p := NewParser(fakeLineParser)
 		programTree, err := p.Parse(tokens)
 
 		if err != nil {
@@ -35,9 +35,9 @@ func TestParser_Parse(t *testing.T) {
 				return nil, 0, expectedError
 			},
 		}
-		p := NewParser(fakeLineParser)
 		tokens := []domain.Token{{}}
 
+		p := NewParser(fakeLineParser)
 		_, err := p.Parse(tokens)
 
 		if !errors.Is(err, expectedError) {
@@ -46,9 +46,9 @@ func TestParser_Parse(t *testing.T) {
 	})
 
 	t.Run("returns empty program tree when no tokens provided", func(t *testing.T) {
-		p := NewParser(&fakeLineParser{})
 		var tokens []domain.Token
 
+		p := NewParser(&fakeLineParser{})
 		programTree, err := p.Parse(tokens)
 
 		if err != nil {

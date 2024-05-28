@@ -15,7 +15,6 @@ func TestLineParser_Parse(t *testing.T) {
 				return identifierNode, currentIndex + 1, nil
 			},
 		}
-		lp := &lineParser{statementParser: fakeStatementParser}
 		tokens := []domain.Token{
 			{Type: domain.Number},
 			{Type: domain.Identifier},
@@ -29,13 +28,17 @@ func TestLineParser_Parse(t *testing.T) {
 			},
 		}
 
-		lineNode, _, err := lp.Parse(tokens, 0)
+		lp := NewLineParser(fakeStatementParser)
+		lineNode, index, err := lp.Parse(tokens, 0)
 
 		if err != nil {
 			t.Errorf("Unexpected error: %v", err)
 		}
 		if !reflect.DeepEqual(lineNode, expectedLineNode) {
 			t.Errorf("Expected %v, got %v", expectedLineNode, lineNode)
+		}
+		if index != 3 {
+			t.Errorf("Expected index 3, got %d", index)
 		}
 	})
 
@@ -46,13 +49,13 @@ func TestLineParser_Parse(t *testing.T) {
 				return nil, 0, expectedError
 			},
 		}
-		lp := &lineParser{statementParser: fakeStatementParser}
 		tokens := []domain.Token{
 			{Type: domain.Number},
 			{Type: domain.Identifier},
 			{Type: domain.Cr},
 		}
 
+		lp := NewLineParser(fakeStatementParser)
 		_, _, err := lp.Parse(tokens, 0)
 
 		if !errors.Is(err, expectedError) {
@@ -66,9 +69,9 @@ func TestLineParser_Parse(t *testing.T) {
 				return &domain.Node{}, currentIndex + 1, nil
 			},
 		}
-		lp := &lineParser{statementParser: fakeStatementParser}
 		tokens := []domain.Token{{Type: domain.Number}}
 
+		lp := NewLineParser(fakeStatementParser)
 		_, _, err := lp.Parse(tokens, 0)
 
 		if err == nil {
@@ -82,12 +85,12 @@ func TestLineParser_Parse(t *testing.T) {
 				return &domain.Node{}, currentIndex + 1, nil
 			},
 		}
-		lp := &lineParser{statementParser: fakeStatementParser}
 		tokens := []domain.Token{
 			{Type: domain.Number},
 			{Type: domain.Identifier},
 		}
 
+		lp := NewLineParser(fakeStatementParser)
 		_, _, err := lp.Parse(tokens, 0)
 
 		if err == nil {

@@ -25,15 +25,18 @@ func (s statementParser) Parse(tokens []domain.Token, currentIndex int) (*domain
 	case domain.Print:
 		statementNode.AddChild(&domain.Node{Token: tokens[currentIndex]})
 		currentIndex++
-		expressionListNode, currentIndex, err := s.expressionListParser.Parse(tokens, currentIndex)
+		expressionListNode, newIndex, err := s.expressionListParser.Parse(tokens, currentIndex)
 		if err != nil {
-			return nil, currentIndex, err
+			return nil, newIndex, err
 		}
+		currentIndex = newIndex
 		statementNode.AddChild(expressionListNode)
+
+	// TODO: Implement parsing of other statements
 
 	default:
 		return nil, currentIndex, fmt.Errorf("unexpected statement: %v", tokens[currentIndex].Type)
 	}
 
-	return nil, -1, nil
+	return &statementNode, currentIndex, nil
 }
