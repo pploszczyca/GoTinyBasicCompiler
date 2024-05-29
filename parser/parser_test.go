@@ -10,8 +10,9 @@ import (
 func TestParser_Parse(t *testing.T) {
 	t.Run("returns program tree when tokens are valid", func(t *testing.T) {
 		fakeLineParser := &fakeLineParser{
-			ParseMock: func(tokens []domain.Token, currentIndex int) (*domain.Node, int, error) {
-				return &domain.Node{}, currentIndex + 1, nil
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				iterator.Next()
+				return &domain.Node{}, nil
 			},
 		}
 		tokens := []domain.Token{{}, {}, {}}
@@ -31,8 +32,9 @@ func TestParser_Parse(t *testing.T) {
 	t.Run("returns error when line parser returns error", func(t *testing.T) {
 		expectedError := errors.New("parse error")
 		fakeLineParser := &fakeLineParser{
-			ParseMock: func(tokens []domain.Token, currentIndex int) (*domain.Node, int, error) {
-				return nil, 0, expectedError
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				iterator.Next()
+				return nil, expectedError
 			},
 		}
 		tokens := []domain.Token{{}}
@@ -48,7 +50,12 @@ func TestParser_Parse(t *testing.T) {
 	t.Run("returns empty program tree when no tokens provided", func(t *testing.T) {
 		var tokens []domain.Token
 
-		p := NewParser(&fakeLineParser{})
+		p := NewParser(&fakeLineParser{
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				iterator.Next()
+				return &domain.Node{}, nil
+			},
+		})
 		programTree, err := p.Parse(tokens)
 
 		if err != nil {
@@ -61,9 +68,9 @@ func TestParser_Parse(t *testing.T) {
 }
 
 type fakeLineParser struct {
-	ParseMock func(tokens []domain.Token, currentIndex int) (*domain.Node, int, error)
+	ParseMock func(iterator *domain.TokenIterator) (*domain.Node, error)
 }
 
-func (f fakeLineParser) Parse(tokens []domain.Token, currentIndex int) (*domain.Node, int, error) {
-	return f.ParseMock(tokens, currentIndex)
+func (f *fakeLineParser) Parse(iterator *domain.TokenIterator) (*domain.Node, error) {
+	return f.ParseMock(iterator)
 }

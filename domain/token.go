@@ -54,8 +54,8 @@ type TokenIterator struct {
 	tokens       []Token
 }
 
-func NewTokenIterator(tokens []Token) *TokenIterator {
-	return &TokenIterator{
+func NewTokenIterator(tokens []Token) TokenIterator {
+	return TokenIterator{
 		currentIndex: 0,
 		tokens:       tokens,
 	}

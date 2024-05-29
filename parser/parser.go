@@ -29,7 +29,7 @@ func (p *parser) Parse(tokens []domain.Token) (domain.ProgramTree, error) {
 	programTree := domain.ProgramTree{}
 
 	for iterator.HasNext() {
-		node, err := p.lineParser.Parse(iterator)
+		node, err := p.lineParser.Parse(&iterator)
 		if err != nil {
 			return domain.ProgramTree{}, err
 		}
