@@ -11,8 +11,9 @@ func TestLineParser_Parse(t *testing.T) {
 	t.Run("parses line with number and statement", func(t *testing.T) {
 		identifierNode := &domain.Node{Type: domain.IdentifierNode}
 		fakeStatementParser := &fakeStatementParser{
-			ParseMock: func(tokens []domain.Token, currentIndex int) (*domain.Node, int, error) {
-				return identifierNode, currentIndex + 1, nil
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				iterator.Next()
+				return identifierNode, nil
 			},
 		}
 		tokens := []domain.Token{
@@ -20,6 +21,7 @@ func TestLineParser_Parse(t *testing.T) {
 			{Type: domain.Identifier},
 			{Type: domain.Cr},
 		}
+		iterator := domain.NewTokenIterator(tokens)
 		expectedLineNode := &domain.Node{
 			Type: domain.LineNode,
 			Children: []*domain.Node{
@@ -29,7 +31,7 @@ func TestLineParser_Parse(t *testing.T) {
 		}
 
 		lp := NewLineParser(fakeStatementParser)
-		lineNode, index, err := lp.Parse(tokens, 0)
+		lineNode, err := lp.Parse(&iterator)
 
 		if err != nil {
 			t.Errorf("Unexpected error: %v", err)
@@ -37,16 +39,13 @@ func TestLineParser_Parse(t *testing.T) {
 		if !reflect.DeepEqual(lineNode, expectedLineNode) {
 			t.Errorf("Expected %v, got %v", expectedLineNode, lineNode)
 		}
-		if index != 3 {
-			t.Errorf("Expected index 3, got %d", index)
-		}
 	})
 
 	t.Run("returns error when statement parser returns error", func(t *testing.T) {
 		expectedError := errors.New("parse error")
 		fakeStatementParser := &fakeStatementParser{
-			ParseMock: func(tokens []domain.Token, currentIndex int) (*domain.Node, int, error) {
-				return nil, 0, expectedError
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				return nil, expectedError
 			},
 		}
 		tokens := []domain.Token{
@@ -54,9 +53,10 @@ func TestLineParser_Parse(t *testing.T) {
 			{Type: domain.Identifier},
 			{Type: domain.Cr},
 		}
+		iterator := domain.NewTokenIterator(tokens)
 
 		lp := NewLineParser(fakeStatementParser)
-		_, _, err := lp.Parse(tokens, 0)
+		_, err := lp.Parse(&iterator)
 
 		if !errors.Is(err, expectedError) {
 			t.Errorf("Expected error %v, got %v", expectedError, err)
@@ -65,14 +65,16 @@ func TestLineParser_Parse(t *testing.T) {
 
 	t.Run("returns error when index is out of range", func(t *testing.T) {
 		fakeStatementParser := &fakeStatementParser{
-			ParseMock: func(tokens []domain.Token, currentIndex int) (*domain.Node, int, error) {
-				return &domain.Node{}, currentIndex + 1, nil
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				iterator.Next()
+				return &domain.Node{}, nil
 			},
 		}
 		tokens := []domain.Token{{Type: domain.Number}}
+		iterator := domain.NewTokenIterator(tokens)
 
 		lp := NewLineParser(fakeStatementParser)
-		_, _, err := lp.Parse(tokens, 0)
+		_, err := lp.Parse(&iterator)
 
 		if err == nil {
 			t.Errorf("Expected error, got nil")
@@ -81,17 +83,19 @@ func TestLineParser_Parse(t *testing.T) {
 
 	t.Run("returns error when no CR token at the end", func(t *testing.T) {
 		fakeStatementParser := &fakeStatementParser{
-			ParseMock: func(tokens []domain.Token, currentIndex int) (*domain.Node, int, error) {
-				return &domain.Node{}, currentIndex + 1, nil
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				iterator.Next()
+				return &domain.Node{}, nil
 			},
 		}
 		tokens := []domain.Token{
 			{Type: domain.Number},
 			{Type: domain.Identifier},
 		}
+		iterator := domain.NewTokenIterator(tokens)
 
 		lp := NewLineParser(fakeStatementParser)
-		_, _, err := lp.Parse(tokens, 0)
+		_, err := lp.Parse(&iterator)
 
 		if err == nil {
 			t.Errorf("Expected error, got nil")
@@ -100,9 +104,9 @@ func TestLineParser_Parse(t *testing.T) {
 }
 
 type fakeStatementParser struct {
-	ParseMock func(tokens []domain.Token, currentIndex int) (*domain.Node, int, error)
+	ParseMock func(iterator *domain.TokenIterator) (*domain.Node, error)
 }
 
-func (f fakeStatementParser) Parse(tokens []domain.Token, currentIndex int) (*domain.Node, int, error) {
-	return f.ParseMock(tokens, currentIndex)
+func (f *fakeStatementParser) Parse(iterator *domain.TokenIterator) (*domain.Node, error) {
+	return f.ParseMock(iterator)
 }

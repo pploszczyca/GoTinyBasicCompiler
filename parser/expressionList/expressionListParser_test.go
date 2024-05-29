@@ -16,9 +16,15 @@ func TestExpressionListParser_Parse(t *testing.T) {
 				{Token: stringToken},
 			},
 		}
+		iterator := domain.NewTokenIterator([]domain.Token{stringToken})
 
-		elp := NewExpressionListParser(fakeExpressionParser{})
-		expressionListNode, newIndex, err := elp.Parse([]domain.Token{stringToken}, 0)
+		elp := NewExpressionListParser(&fakeExpressionParser{
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				iterator.Next()
+				return &domain.Node{}, nil
+			},
+		})
+		expressionListNode, err := elp.Parse(&iterator)
 
 		if err != nil {
 			t.Errorf("Expected nil, got %v", err)
@@ -29,21 +35,19 @@ func TestExpressionListParser_Parse(t *testing.T) {
 		if !reflect.DeepEqual(*expressionListNode.Children[0], *expectedExpressionListNode.Children[0]) {
 			t.Errorf("Expected %v, got %v", *expectedExpressionListNode.Children[0], *expressionListNode.Children[0])
 		}
-		if newIndex != 1 {
-			t.Errorf("Expected index 1, got %d", newIndex)
-		}
 	})
 
 	t.Run("returns error when expression parser returns error", func(t *testing.T) {
 		expectedError := errors.New("parse error")
 		fakeExpressionParser := fakeExpressionParser{
-			ParseMock: func(tokens []domain.Token, currentIndex int) (*domain.Node, int, error) {
-				return nil, 0, expectedError
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				return nil, expectedError
 			},
 		}
+		iterator := domain.NewTokenIterator([]domain.Token{{Type: domain.Identifier}})
 
-		elp := NewExpressionListParser(fakeExpressionParser)
-		_, _, err := elp.Parse([]domain.Token{{Type: domain.Identifier}}, 0)
+		elp := NewExpressionListParser(&fakeExpressionParser)
+		_, err := elp.Parse(&iterator)
 
 		if !errors.Is(err, expectedError) {
 			t.Errorf("Expected %v, got %v", expectedError, err)
@@ -61,13 +65,15 @@ func TestExpressionListParser_Parse(t *testing.T) {
 		}
 		tokens := []domain.Token{identifierToken}
 		fakeExpressionParser := fakeExpressionParser{
-			ParseMock: func(tokens []domain.Token, currentIndex int) (*domain.Node, int, error) {
-				return expressionNode, currentIndex + 2, nil
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				iterator.Next()
+				return expressionNode, nil
 			},
 		}
+		iterator := domain.NewTokenIterator(tokens)
 
-		elp := NewExpressionListParser(fakeExpressionParser)
-		expressionListNode, newIndex, err := elp.Parse(tokens, 0)
+		elp := NewExpressionListParser(&fakeExpressionParser)
+		expressionListNode, err := elp.Parse(&iterator)
 
 		if err != nil {
 			t.Errorf("Expected nil, got %v", err)
@@ -77,16 +83,13 @@ func TestExpressionListParser_Parse(t *testing.T) {
 			println(expectedExpressionListNode.Children[0].Token.Type)
 			t.Errorf("Expected %v, got %v", expectedExpressionListNode, expressionListNode)
 		}
-		if newIndex != 2 {
-			t.Errorf("Expected index 2, got %d", newIndex)
-		}
 	})
 }
 
 type fakeExpressionParser struct {
-	ParseMock func(tokens []domain.Token, currentIndex int) (*domain.Node, int, error)
+	ParseMock func(iterator *domain.TokenIterator) (*domain.Node, error)
 }
 
-func (f fakeExpressionParser) Parse(tokens []domain.Token, currentIndex int) (*domain.Node, int, error) {
-	return f.ParseMock(tokens, currentIndex)
+func (f *fakeExpressionParser) Parse(iterator *domain.TokenIterator) (*domain.Node, error) {
+	return f.ParseMock(iterator)
 }
