@@ -13,65 +13,78 @@ func NewExpressionParser() parser.NodeParser {
 	return &expressionParser{}
 }
 
-func (e expressionParser) Parse(tokens []domain.Token, currentIndex int) (*domain.Node, int, error) {
+func (e expressionParser) Parse(iterator *domain.TokenIterator) (*domain.Node, error) {
 	expressionNode := &domain.Node{Type: domain.ExpressionNode}
 
-	if tokens[currentIndex].Type == domain.Plus || tokens[currentIndex].Type == domain.Minus {
-		expressionNode.AddChild(&domain.Node{Token: tokens[currentIndex]})
-		currentIndex++
+	token, err := iterator.Current()
+	if err != nil {
+		return nil, err
 	}
 
-	newIndex, node, i, err := e.parseFactor(tokens, currentIndex, expressionNode)
-	if err != nil {
-		return node, i, err
+	if token.Type == domain.Plus || token.Type == domain.Minus {
+		expressionNode.AddChild(&domain.Node{Token: token})
+		iterator.Next()
 	}
-	currentIndex = newIndex
+
+	err = e.parseFactor(iterator, expressionNode)
+	if err != nil {
+		return nil, err
+	}
+
+	token, err = iterator.Current()
+	if err != nil {
+		return nil, err
+	}
 
 	for {
-		if tokens[currentIndex].Type == domain.Multiply || tokens[currentIndex].Type == domain.Divide {
-			expressionNode.AddChild(&domain.Node{Token: tokens[currentIndex]})
-			currentIndex++
+		if token.Type == domain.Multiply || token.Type == domain.Divide {
+			expressionNode.AddChild(&domain.Node{Token: token})
+			iterator.Next()
 
-			newIndex, node, i, err = e.parseFactor(tokens, currentIndex, expressionNode)
+			err = e.parseFactor(iterator, expressionNode)
 			if err != nil {
-				return node, i, err
+				return nil, err
 			}
-			currentIndex = newIndex
-			expressionNode.AddChild(&domain.Node{Token: tokens[currentIndex]})
 		} else {
-			newIndex, node, i, err = e.parseFactor(tokens, currentIndex, expressionNode)
+			err = e.parseFactor(iterator, expressionNode)
 			if err != nil {
 				break
 			}
-			currentIndex = newIndex
-			expressionNode.AddChild(&domain.Node{Token: tokens[currentIndex]})
 		}
 	}
 
 	// TODO: Add parsing list of expressions
 
-	return expressionNode, currentIndex, nil
+	return expressionNode, nil
 }
 
-func (e expressionParser) parseFactor(tokens []domain.Token, currentIndex int, expressionNode *domain.Node) (int, *domain.Node, int, error) {
-	if tokens[currentIndex].Type == domain.Number || tokens[currentIndex].Type == domain.Identifier {
-		expressionNode.AddChild(&domain.Node{Token: tokens[currentIndex]})
-		currentIndex++
-	} else if tokens[currentIndex].Type == domain.LParen {
-		expressionNode.AddChild(&domain.Node{Token: tokens[currentIndex]})
-		currentIndex++
-		expressionNode, newIndex, err := e.Parse(tokens, currentIndex)
-		if err != nil {
-			return 0, nil, newIndex, err
-		}
-		currentIndex = newIndex
-		if tokens[currentIndex].Type != domain.RParen {
-			return 0, nil, currentIndex, fmt.Errorf("expected RParen token, but got %v", tokens[currentIndex].Type)
-		}
-		expressionNode.AddChild(&domain.Node{Token: tokens[currentIndex]})
-		currentIndex++
-	} else {
-		return 0, nil, currentIndex, fmt.Errorf("unexpected token: %v", tokens[currentIndex].Type)
+func (e expressionParser) parseFactor(iterator *domain.TokenIterator, expressionNode *domain.Node) error {
+	token, err := iterator.Current()
+	if err != nil {
+		return err
 	}
-	return currentIndex, nil, 0, nil
+
+	if token.Type == domain.Number || token.Type == domain.Identifier {
+		expressionNode.AddChild(&domain.Node{Token: token})
+		iterator.Next()
+	} else if token.Type == domain.LParen {
+		expressionNode.AddChild(&domain.Node{Token: token})
+		iterator.Next()
+		expressionNode, err := e.Parse(iterator)
+		if err != nil {
+			return err
+		}
+		token, err = iterator.Current()
+		if err != nil {
+			return err
+		}
+		if token.Type != domain.RParen {
+			return fmt.Errorf("expected RParen token, but got %v", token.Type)
+		}
+		expressionNode.AddChild(&domain.Node{Token: token})
+		iterator.Next()
+	} else {
+		return fmt.Errorf("unexpected token: %v", token.Type)
+	}
+	return nil
 }

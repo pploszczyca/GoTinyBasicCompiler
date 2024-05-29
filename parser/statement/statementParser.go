@@ -18,25 +18,29 @@ func NewStatementParser(
 	}
 }
 
-func (s statementParser) Parse(tokens []domain.Token, currentIndex int) (*domain.Node, int, error) {
+func (s statementParser) Parse(iterator *domain.TokenIterator) (*domain.Node, error) {
 	statementNode := domain.Node{Type: domain.StatementNode}
 
-	switch tokens[currentIndex].Type {
+	token, err := iterator.Current()
+	if err != nil {
+		return nil, err
+	}
+
+	switch token.Type {
 	case domain.Print:
-		statementNode.AddChild(&domain.Node{Token: tokens[currentIndex]})
-		currentIndex++
-		expressionListNode, newIndex, err := s.expressionListParser.Parse(tokens, currentIndex)
+		statementNode.AddChild(&domain.Node{Token: token})
+		iterator.Next()
+		expressionListNode, err := s.expressionListParser.Parse(iterator)
 		if err != nil {
-			return nil, newIndex, err
+			return nil, err
 		}
-		currentIndex = newIndex
 		statementNode.AddChild(expressionListNode)
 
 	// TODO: Implement parsing of other statements
 
 	default:
-		return nil, currentIndex, fmt.Errorf("unexpected statement: %v", tokens[currentIndex].Type)
+		return nil, fmt.Errorf("unexpected statement: %v", token.Type)
 	}
 
-	return &statementNode, currentIndex, nil
+	return &statementNode, nil
 }

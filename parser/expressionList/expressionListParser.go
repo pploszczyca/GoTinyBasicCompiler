@@ -17,22 +17,26 @@ func NewExpressionListParser(
 	}
 }
 
-func (e expressionListParser) Parse(tokens []domain.Token, currentIndex int) (*domain.Node, int, error) {
+func (e expressionListParser) Parse(iterator *domain.TokenIterator) (*domain.Node, error) {
 	expressionListNode := &domain.Node{Type: domain.ExpressionListNode}
 
-	if tokens[currentIndex].Type == domain.String {
-		expressionListNode.AddChild(&domain.Node{Token: tokens[currentIndex]})
-		currentIndex++
+	token, err := iterator.Current()
+	if err != nil {
+		return nil, err
+	}
+
+	if token.Type == domain.String {
+		expressionListNode.AddChild(&domain.Node{Token: token})
+		iterator.Next()
 	} else {
-		expressionNode, newIndex, err := e.expressionParser.Parse(tokens, currentIndex)
+		expressionNode, err := e.expressionParser.Parse(iterator)
 		if err != nil {
-			return nil, newIndex, err
+			return nil, err
 		}
-		currentIndex = newIndex
 		expressionListNode.AddChild(expressionNode)
 	}
 
 	// TODO: Implement parsing list of expressions or strings
 
-	return expressionListNode, currentIndex, nil
+	return expressionListNode, nil
 }

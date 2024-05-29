@@ -18,30 +18,36 @@ func NewLineParser(
 	}
 }
 
-func (l lineParser) Parse(tokens []domain.Token, currentIndex int) (*domain.Node, int, error) {
+func (l lineParser) Parse(iterator *domain.TokenIterator) (*domain.Node, error) {
 	lineNode := domain.Node{Type: domain.LineNode}
 
-	if tokens[currentIndex].Type == domain.Number {
-		lineNode.AddChild(&domain.Node{Type: domain.NumberNode, Token: tokens[currentIndex]})
-		currentIndex++
+	token, err := iterator.Current()
+	if err != nil {
+		return nil, err
 	}
 
-	statementNode, currentIndex, err := l.statementParser.Parse(tokens, currentIndex)
+	if token.Type == domain.Number {
+		lineNode.AddChild(&domain.Node{Type: domain.NumberNode, Token: token})
+		iterator.Next()
+	}
+
+	statementNode, err := l.statementParser.Parse(iterator)
 	if err != nil {
-		return nil, currentIndex, err
+		return nil, err
 	}
 
 	lineNode.AddChild(statementNode)
 
-	if currentIndex >= len(tokens) {
-		return nil, currentIndex, fmt.Errorf("expected CR token, but got EOF")
+	token, err = iterator.Current()
+	if err != nil {
+		return nil, err
 	}
 
-	if tokens[currentIndex].Type != domain.Cr {
-		return nil, currentIndex, fmt.Errorf("expected CR token, but got %v", tokens[currentIndex].Type)
+	if token.Type != domain.Cr {
+		return nil, fmt.Errorf("expected CR token, but got %v", token.Type)
 	}
 
-	currentIndex++
+	iterator.Next()
 
-	return &lineNode, currentIndex, nil
+	return &lineNode, nil
 }

@@ -9,7 +9,7 @@ type Parser interface {
 }
 
 type NodeParser interface {
-	Parse(tokens []domain.Token, currentIndex int) (*domain.Node, int, error)
+	Parse(iterator *domain.TokenIterator) (*domain.Node, error)
 }
 
 type parser struct {
@@ -25,15 +25,14 @@ func NewParser(
 }
 
 func (p *parser) Parse(tokens []domain.Token) (domain.ProgramTree, error) {
-	currentIndex := 0
+	iterator := domain.NewTokenIterator(tokens)
 	programTree := domain.ProgramTree{}
 
-	for currentIndex < len(tokens) {
-		node, newIndex, err := p.lineParser.Parse(tokens, currentIndex)
+	for iterator.HasNext() {
+		node, err := p.lineParser.Parse(iterator)
 		if err != nil {
 			return domain.ProgramTree{}, err
 		}
-		currentIndex = newIndex
 		programTree.Nodes = append(programTree.Nodes, node)
 	}
 
