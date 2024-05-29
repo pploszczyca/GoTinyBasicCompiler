@@ -11,14 +11,16 @@ func TestStatementParser_Parse(t *testing.T) {
 	t.Run("parses print statement", func(t *testing.T) {
 		expressionListNode := &domain.Node{Type: domain.ExpressionNode}
 		fakeExpressionListParser := fakeExpressionListParser{
-			ParseMock: func(tokens []domain.Token, currentIndex int) (*domain.Node, int, error) {
-				return expressionListNode, currentIndex + 1, nil
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				iterator.Next()
+				return expressionListNode, nil
 			},
 		}
 		tokens := []domain.Token{
 			{Type: domain.Print},
 			{Type: domain.String},
 		}
+		iterator := domain.NewTokenIterator(tokens)
 		expectedStatementNode := &domain.Node{
 			Type: domain.StatementNode,
 			Children: []*domain.Node{
@@ -27,8 +29,9 @@ func TestStatementParser_Parse(t *testing.T) {
 			},
 		}
 
-		sp := NewStatementParser(fakeExpressionListParser)
-		statementNode, index, err := sp.Parse(tokens, 0)
+		sp := NewStatementParser(&fakeExpressionListParser)
+
+		statementNode, err := sp.Parse(&iterator)
 
 		if err != nil {
 			t.Errorf("Unexpected error: %v", err)
@@ -36,16 +39,13 @@ func TestStatementParser_Parse(t *testing.T) {
 		if !reflect.DeepEqual(statementNode, expectedStatementNode) {
 			t.Errorf("Expected %v, got %v", expectedStatementNode, statementNode)
 		}
-		if index != 2 {
-			t.Errorf("Expected index 3, got %d", index)
-		}
 	})
 
 	t.Run("returns error when expression list parser returns error", func(t *testing.T) {
 		expectedError := fmt.Errorf("parse error")
 		fakeExpressionListParser := fakeExpressionListParser{
-			ParseMock: func(tokens []domain.Token, currentIndex int) (*domain.Node, int, error) {
-				return nil, 0, expectedError
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				return nil, expectedError
 			},
 		}
 		tokens := []domain.Token{
@@ -53,9 +53,10 @@ func TestStatementParser_Parse(t *testing.T) {
 			{Type: domain.String},
 			{Type: domain.Cr},
 		}
+		iterator := domain.NewTokenIterator(tokens)
 
-		sp := NewStatementParser(fakeExpressionListParser)
-		_, _, err := sp.Parse(tokens, 0)
+		sp := NewStatementParser(&fakeExpressionListParser)
+		_, err := sp.Parse(&iterator)
 
 		if !reflect.DeepEqual(err, expectedError) {
 			t.Errorf("Expected error %v, got %v", expectedError, err)
@@ -66,10 +67,11 @@ func TestStatementParser_Parse(t *testing.T) {
 		tokens := []domain.Token{
 			{Type: domain.Identifier},
 		}
+		iterator := domain.NewTokenIterator(tokens)
 		expectedError := fmt.Errorf("unexpected statement: 2")
 
-		sp := NewStatementParser(fakeExpressionListParser{})
-		_, _, err := sp.Parse(tokens, 0)
+		sp := NewStatementParser(&fakeExpressionListParser{})
+		_, err := sp.Parse(&iterator)
 
 		if !reflect.DeepEqual(err, expectedError) {
 			t.Errorf("Expected error %v, got %v", expectedError, err)
@@ -78,9 +80,9 @@ func TestStatementParser_Parse(t *testing.T) {
 }
 
 type fakeExpressionListParser struct {
-	ParseMock func(tokens []domain.Token, currentIndex int) (*domain.Node, int, error)
+	ParseMock func(iterator *domain.TokenIterator) (*domain.Node, error)
 }
 
-func (f fakeExpressionListParser) Parse(tokens []domain.Token, currentIndex int) (*domain.Node, int, error) {
-	return f.ParseMock(tokens, currentIndex)
+func (f *fakeExpressionListParser) Parse(iterator *domain.TokenIterator) (*domain.Node, error) {
+	return f.ParseMock(iterator)
 }
