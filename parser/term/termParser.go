@@ -20,30 +20,24 @@ func NewTermParser(
 func (t termParser) Parse(iterator *domain.TokenIterator) (*domain.Node, error) {
 	termNode := &domain.Node{Type: domain.TermNode}
 
-	factorNode, err := t.factorParser.Parse(iterator)
-	if err != nil {
-		return nil, err
-	}
-	termNode.AddChild(factorNode)
-
 	for {
+		factorNode, err := t.factorParser.Parse(iterator)
+		if err != nil {
+			return nil, err
+		}
+		termNode.AddChild(factorNode)
+
 		token, err := iterator.Current()
 		if err != nil {
 			return nil, err
 		}
 
-		if token.Type == domain.Multiply || token.Type == domain.Divide {
-			termNode.AddChildToken(token)
-			iterator.Next()
-
-			factorNode, err := t.factorParser.Parse(iterator)
-			if err != nil {
-				return nil, err
-			}
-			termNode.AddChild(factorNode)
-		} else {
+		if token.Type != domain.Multiply && token.Type != domain.Divide {
 			break
 		}
+
+		termNode.AddChildToken(token)
+		iterator.Next()
 	}
 
 	return termNode, nil
