@@ -2,6 +2,7 @@ package parser
 
 import (
 	"GoTinyBasicCompiler/domain"
+	"GoTinyBasicCompiler/testutils"
 	"errors"
 	"reflect"
 	"testing"
@@ -9,7 +10,7 @@ import (
 
 func TestParser_Parse(t *testing.T) {
 	t.Run("returns program tree when tokens are valid", func(t *testing.T) {
-		fakeLineParser := &fakeLineParser{
+		fakeLineParser := &testutils.FakeNodeParser{
 			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
 				iterator.Next()
 				return &domain.Node{}, nil
@@ -31,7 +32,7 @@ func TestParser_Parse(t *testing.T) {
 
 	t.Run("returns error when line parser returns error", func(t *testing.T) {
 		expectedError := errors.New("parse error")
-		fakeLineParser := &fakeLineParser{
+		fakeLineParser := &testutils.FakeNodeParser{
 			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
 				iterator.Next()
 				return nil, expectedError
@@ -50,7 +51,7 @@ func TestParser_Parse(t *testing.T) {
 	t.Run("returns empty program tree when no tokens provided", func(t *testing.T) {
 		var tokens []domain.Token
 
-		p := NewParser(&fakeLineParser{
+		p := NewParser(&testutils.FakeNodeParser{
 			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
 				iterator.Next()
 				return &domain.Node{}, nil
@@ -65,12 +66,4 @@ func TestParser_Parse(t *testing.T) {
 			t.Errorf("Expected 0 nodes, got %d", len(programTree.Nodes))
 		}
 	})
-}
-
-type fakeLineParser struct {
-	ParseMock func(iterator *domain.TokenIterator) (*domain.Node, error)
-}
-
-func (f *fakeLineParser) Parse(iterator *domain.TokenIterator) (*domain.Node, error) {
-	return f.ParseMock(iterator)
 }

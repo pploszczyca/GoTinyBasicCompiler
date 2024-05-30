@@ -2,6 +2,7 @@ package statement
 
 import (
 	"GoTinyBasicCompiler/domain"
+	"GoTinyBasicCompiler/testutils"
 	"fmt"
 	"reflect"
 	"testing"
@@ -10,7 +11,7 @@ import (
 func TestStatementParser_Parse(t *testing.T) {
 	t.Run("parses print statement", func(t *testing.T) {
 		expressionListNode := &domain.Node{Type: domain.ExpressionNode}
-		fakeExpressionListParser := fakeExpressionListParser{
+		fakeExpressionListParser := testutils.FakeNodeParser{
 			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
 				iterator.Next()
 				return expressionListNode, nil
@@ -43,7 +44,7 @@ func TestStatementParser_Parse(t *testing.T) {
 
 	t.Run("returns error when expression list parser returns error", func(t *testing.T) {
 		expectedError := fmt.Errorf("parse error")
-		fakeExpressionListParser := fakeExpressionListParser{
+		fakeExpressionListParser := testutils.FakeNodeParser{
 			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
 				return nil, expectedError
 			},
@@ -70,19 +71,11 @@ func TestStatementParser_Parse(t *testing.T) {
 		iterator := domain.NewTokenIterator(tokens)
 		expectedError := fmt.Errorf("unexpected statement: 2")
 
-		sp := NewStatementParser(&fakeExpressionListParser{})
+		sp := NewStatementParser(&testutils.FakeNodeParser{})
 		_, err := sp.Parse(&iterator)
 
 		if !reflect.DeepEqual(err, expectedError) {
 			t.Errorf("Expected error %v, got %v", expectedError, err)
 		}
 	})
-}
-
-type fakeExpressionListParser struct {
-	ParseMock func(iterator *domain.TokenIterator) (*domain.Node, error)
-}
-
-func (f *fakeExpressionListParser) Parse(iterator *domain.TokenIterator) (*domain.Node, error) {
-	return f.ParseMock(iterator)
 }

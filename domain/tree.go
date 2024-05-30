@@ -29,4 +29,5 @@ const (
 	OperatorNode
 	LineNode
 	ExpressionListNode
+	TermNode
 )

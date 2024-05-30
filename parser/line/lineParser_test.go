@@ -2,6 +2,7 @@ package line
 
 import (
 	"GoTinyBasicCompiler/domain"
+	"GoTinyBasicCompiler/testutils"
 	"errors"
 	"reflect"
 	"testing"
@@ -10,7 +11,7 @@ import (
 func TestLineParser_Parse(t *testing.T) {
 	t.Run("parses line with number and statement", func(t *testing.T) {
 		identifierNode := &domain.Node{Type: domain.IdentifierNode}
-		fakeStatementParser := &fakeStatementParser{
+		fakeStatementParser := &testutils.FakeNodeParser{
 			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
 				iterator.Next()
 				return identifierNode, nil
@@ -43,7 +44,7 @@ func TestLineParser_Parse(t *testing.T) {
 
 	t.Run("returns error when statement parser returns error", func(t *testing.T) {
 		expectedError := errors.New("parse error")
-		fakeStatementParser := &fakeStatementParser{
+		fakeStatementParser := &testutils.FakeNodeParser{
 			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
 				return nil, expectedError
 			},
@@ -64,7 +65,7 @@ func TestLineParser_Parse(t *testing.T) {
 	})
 
 	t.Run("returns error when index is out of range", func(t *testing.T) {
-		fakeStatementParser := &fakeStatementParser{
+		fakeStatementParser := &testutils.FakeNodeParser{
 			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
 				iterator.Next()
 				return &domain.Node{}, nil
@@ -82,7 +83,7 @@ func TestLineParser_Parse(t *testing.T) {
 	})
 
 	t.Run("returns error when no CR token at the end", func(t *testing.T) {
-		fakeStatementParser := &fakeStatementParser{
+		fakeStatementParser := &testutils.FakeNodeParser{
 			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
 				iterator.Next()
 				return &domain.Node{}, nil
@@ -101,12 +102,4 @@ func TestLineParser_Parse(t *testing.T) {
 			t.Errorf("Expected error, got nil")
 		}
 	})
-}
-
-type fakeStatementParser struct {
-	ParseMock func(iterator *domain.TokenIterator) (*domain.Node, error)
-}
-
-func (f *fakeStatementParser) Parse(iterator *domain.TokenIterator) (*domain.Node, error) {
-	return f.ParseMock(iterator)
 }
