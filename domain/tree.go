@@ -10,6 +10,10 @@ type Node struct {
 	Children []*Node
 }
 
+func (n *Node) AddChildToken(token Token) {
+	n.AddChild(&Node{Token: token})
+}
+
 func (n *Node) AddChild(child *Node) {
 	n.Children = append(n.Children, child)
 }

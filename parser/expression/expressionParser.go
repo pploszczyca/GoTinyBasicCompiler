@@ -22,7 +22,7 @@ func (e expressionParser) Parse(iterator *domain.TokenIterator) (*domain.Node, e
 	}
 
 	if token.Type == domain.Plus || token.Type == domain.Minus {
-		expressionNode.AddChild(&domain.Node{Token: token})
+		expressionNode.AddChildToken(token)
 		iterator.Next()
 	}
 
@@ -38,7 +38,7 @@ func (e expressionParser) Parse(iterator *domain.TokenIterator) (*domain.Node, e
 
 	for {
 		if token.Type == domain.Multiply || token.Type == domain.Divide {
-			expressionNode.AddChild(&domain.Node{Token: token})
+			expressionNode.AddChildToken(token)
 			iterator.Next()
 
 			err = e.parseFactor(iterator, expressionNode)
@@ -65,10 +65,10 @@ func (e expressionParser) parseFactor(iterator *domain.TokenIterator, expression
 	}
 
 	if token.Type == domain.Number || token.Type == domain.Identifier {
-		expressionNode.AddChild(&domain.Node{Token: token})
+		expressionNode.AddChildToken(token)
 		iterator.Next()
 	} else if token.Type == domain.LParen {
-		expressionNode.AddChild(&domain.Node{Token: token})
+		expressionNode.AddChildToken(token)
 		iterator.Next()
 		expressionNode, err := e.Parse(iterator)
 		if err != nil {
@@ -81,7 +81,7 @@ func (e expressionParser) parseFactor(iterator *domain.TokenIterator, expression
 		if token.Type != domain.RParen {
 			return fmt.Errorf("expected RParen token, but got %v", token.Type)
 		}
-		expressionNode.AddChild(&domain.Node{Token: token})
+		expressionNode.AddChildToken(token)
 		iterator.Next()
 	} else {
 		return fmt.Errorf("unexpected token: %v", token.Type)

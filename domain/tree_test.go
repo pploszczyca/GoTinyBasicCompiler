@@ -5,6 +5,20 @@ import (
 	"testing"
 )
 
+func TestNode_AddChildToken(t *testing.T) {
+	t.Run("adds token to node", func(t *testing.T) {
+		node := Node{}
+		token := Token{Type: Identifier, Value: "A"}
+		nodeToken := Node{Token: token}
+		node.AddChildToken(token)
+
+		if !reflect.DeepEqual(node.Children[0], &nodeToken) {
+			t.Errorf("expected %v but got %v", nodeToken, node.Children[0])
+		}
+	})
+
+}
+
 func TestNode_AddChild(t *testing.T) {
 	t.Run("adds child to node", func(t *testing.T) {
 		node := Node{}

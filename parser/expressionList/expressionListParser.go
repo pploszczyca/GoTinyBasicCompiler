@@ -26,7 +26,7 @@ func (e expressionListParser) Parse(iterator *domain.TokenIterator) (*domain.Nod
 	}
 
 	if token.Type == domain.String {
-		expressionListNode.AddChild(&domain.Node{Token: token})
+		expressionListNode.AddChildToken(token)
 		iterator.Next()
 	} else {
 		expressionNode, err := e.expressionParser.Parse(iterator)

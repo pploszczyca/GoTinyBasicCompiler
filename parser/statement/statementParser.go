@@ -28,7 +28,7 @@ func (s statementParser) Parse(iterator *domain.TokenIterator) (*domain.Node, er
 
 	switch token.Type {
 	case domain.Print:
-		statementNode.AddChild(&domain.Node{Token: token})
+		statementNode.AddChildToken(token)
 		iterator.Next()
 		expressionListNode, err := s.expressionListParser.Parse(iterator)
 		if err != nil {

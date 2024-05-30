@@ -33,7 +33,7 @@ func (t termParser) Parse(iterator *domain.TokenIterator) (*domain.Node, error) 
 		}
 
 		if token.Type == domain.Multiply || token.Type == domain.Divide {
-			termNode.AddChild(&domain.Node{Token: token})
+			termNode.AddChildToken(token)
 			iterator.Next()
 
 			factorNode, err := t.factorParser.Parse(iterator)
