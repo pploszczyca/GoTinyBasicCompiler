@@ -30,4 +30,5 @@ const (
 	LineNode
 	ExpressionListNode
 	TermNode
+	FactorNode
 )

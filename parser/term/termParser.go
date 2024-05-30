@@ -29,7 +29,7 @@ func (t termParser) Parse(iterator *domain.TokenIterator) (*domain.Node, error) 
 	for {
 		token, err := iterator.Current()
 		if err != nil {
-			break
+			return nil, err
 		}
 
 		if token.Type == domain.Multiply || token.Type == domain.Divide {
