@@ -34,60 +34,21 @@ func (s statementParser) Parse(iterator *domain.TokenIterator) (*domain.Node, er
 
 	switch token.Type {
 	case domain.Print:
-		statementNode.AddChildToken(token)
-		iterator.Next()
-		expressionListNode, err := s.expressionListParser.Parse(iterator)
+		err := s.parsePrint(token, iterator, &statementNode)
 		if err != nil {
 			return nil, err
 		}
-		statementNode.AddChild(expressionListNode)
 	case domain.If:
-		statementNode.AddChildToken(token)
-		iterator.Next()
-
-		expressionNode, err := s.expressionParser.Parse(iterator)
+		err := s.parseIf(token, iterator, &statementNode)
 		if err != nil {
 			return nil, err
 		}
-		statementNode.AddChild(expressionNode)
-
-		relopNode, err := s.relopParser.Parse(iterator)
-		if err != nil {
-			return nil, err
-		}
-		statementNode.AddChild(relopNode)
-
-		expressionNode, err = s.expressionParser.Parse(iterator)
-		if err != nil {
-			return nil, err
-		}
-		statementNode.AddChild(expressionNode)
-
-		token, err = iterator.Current()
-		if err != nil {
-			return nil, err
-		}
-		if token.Type != domain.Then {
-			return nil, fmt.Errorf("expected THEN")
-		}
-		statementNode.AddChildToken(token)
-		iterator.Next()
-
-		ifStatementNode, err := s.Parse(iterator)
-		if err != nil {
-			return nil, err
-		}
-		statementNode.AddChild(ifStatementNode)
 
 	case domain.Goto:
-		statementNode.AddChildToken(token)
-		iterator.Next()
-
-		expressionNode, err := s.expressionParser.Parse(iterator)
+		err := s.parseGoto(token, iterator, &statementNode)
 		if err != nil {
 			return nil, err
 		}
-		statementNode.AddChild(expressionNode)
 
 	// TODO: Implement parsing of other statements
 
@@ -96,4 +57,81 @@ func (s statementParser) Parse(iterator *domain.TokenIterator) (*domain.Node, er
 	}
 
 	return &statementNode, nil
+}
+
+func (s statementParser) parsePrint(
+	token domain.Token,
+	iterator *domain.TokenIterator,
+	statementNode *domain.Node,
+) error {
+	statementNode.AddChildToken(token)
+	iterator.Next()
+	expressionListNode, err := s.expressionListParser.Parse(iterator)
+	if err != nil {
+		return err
+	}
+	statementNode.AddChild(expressionListNode)
+	return nil
+}
+
+func (s statementParser) parseIf(
+	token domain.Token,
+	iterator *domain.TokenIterator,
+	statementNode *domain.Node,
+) error {
+	statementNode.AddChildToken(token)
+	iterator.Next()
+
+	expressionNode, err := s.expressionParser.Parse(iterator)
+	if err != nil {
+		return err
+	}
+	statementNode.AddChild(expressionNode)
+
+	relopNode, err := s.relopParser.Parse(iterator)
+	if err != nil {
+		return err
+	}
+	statementNode.AddChild(relopNode)
+
+	expressionNode, err = s.expressionParser.Parse(iterator)
+	if err != nil {
+		return err
+	}
+	statementNode.AddChild(expressionNode)
+
+	token, err = iterator.Current()
+	if err != nil {
+		return err
+	}
+	if token.Type != domain.Then {
+		return fmt.Errorf("expected THEN")
+	}
+	statementNode.AddChildToken(token)
+	iterator.Next()
+
+	ifStatementNode, err := s.Parse(iterator)
+	if err != nil {
+		return err
+	}
+	statementNode.AddChild(ifStatementNode)
+
+	return nil
+}
+
+func (s statementParser) parseGoto(
+	token domain.Token,
+	iterator *domain.TokenIterator,
+	statementNode *domain.Node,
+) error {
+	statementNode.AddChildToken(token)
+	iterator.Next()
+
+	expressionNode, err := s.expressionParser.Parse(iterator)
+	if err != nil {
+		return err
+	}
+	statementNode.AddChild(expressionNode)
+
+	return nil
 }
