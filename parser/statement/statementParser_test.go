@@ -34,6 +34,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			&fakeExpressionListParser,
 			&testutils.FakeNodeParser{},
 			&testutils.FakeNodeParser{},
+			&testutils.FakeNodeParser{},
 		)
 
 		statementNode, err := sp.Parse(&iterator)
@@ -64,6 +65,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			&fakeExpressionListParser,
 			&testutils.FakeNodeParser{},
 			&testutils.FakeNodeParser{},
+			&testutils.FakeNodeParser{},
 		)
 
 		_, err := sp.Parse(&iterator)
@@ -81,6 +83,7 @@ func TestStatementParser_Parse(t *testing.T) {
 		expectedError := fmt.Errorf("unexpected statement: 2")
 
 		sp := NewStatementParser(
+			&testutils.FakeNodeParser{},
 			&testutils.FakeNodeParser{},
 			&testutils.FakeNodeParser{},
 			&testutils.FakeNodeParser{},
@@ -109,6 +112,7 @@ func TestStatementParser_Parse(t *testing.T) {
 		sp := NewStatementParser(
 			&testutils.FakeNodeParser{},
 			&fakeExpressionParser,
+			&testutils.FakeNodeParser{},
 			&testutils.FakeNodeParser{},
 		)
 
@@ -143,6 +147,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			&testutils.FakeNodeParser{},
 			fakeExpressionParser,
 			&fakeRelopParser,
+			&testutils.FakeNodeParser{},
 		)
 
 		_, err := sp.Parse(&iterator)
@@ -184,6 +189,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			&testutils.FakeNodeParser{},
 			fakeExpressionParser,
 			&fakeRelopParser,
+			&testutils.FakeNodeParser{},
 		)
 
 		_, err := sp.Parse(&iterator)
@@ -219,6 +225,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			&testutils.FakeNodeParser{},
 			fakeExpressionParser,
 			fakeRelopParser,
+			&testutils.FakeNodeParser{},
 		)
 
 		_, err := sp.Parse(&iterator)
@@ -255,6 +262,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			&testutils.FakeNodeParser{},
 			fakeExpressionParser,
 			fakeRelopParser,
+			&testutils.FakeNodeParser{},
 		)
 
 		_, err := sp.Parse(&iterator)
@@ -291,6 +299,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			&testutils.FakeNodeParser{},
 			fakeExpressionParser,
 			fakeRelopParser,
+			&testutils.FakeNodeParser{},
 		)
 
 		_, err := sp.Parse(&iterator)
@@ -338,6 +347,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			fakeExpressionListParser,
 			fakeExpressionParser,
 			fakeRelopParser,
+			&testutils.FakeNodeParser{},
 		)
 
 		statementNode, err := sp.Parse(&iterator)
@@ -395,6 +405,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			&testutils.FakeNodeParser{},
 			fakeExpressionParser,
 			&testutils.FakeNodeParser{},
+			&testutils.FakeNodeParser{},
 		)
 
 		_, err := sp.Parse(&iterator)
@@ -429,6 +440,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			&testutils.FakeNodeParser{},
 			fakeExpressionParser,
 			&testutils.FakeNodeParser{},
+			&testutils.FakeNodeParser{},
 		)
 
 		statementNode, err := sp.Parse(&iterator)
@@ -440,4 +452,6 @@ func TestStatementParser_Parse(t *testing.T) {
 			t.Errorf("Expected %v, got %v", expectedStatementNode, statementNode)
 		}
 	})
+
+	// TODO: Add tests for input, let, gosub, return, clear, list, run, end
 }

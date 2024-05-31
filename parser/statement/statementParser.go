@@ -35,57 +35,33 @@ func (s statementParser) Parse(iterator *domain.TokenIterator) (*domain.Node, er
 		return nil, err
 	}
 
+	var parseErr error
 	switch token.Type {
 	case domain.Print:
-		err := s.parsePrint(token, iterator, &statementNode)
-		if err != nil {
-			return nil, err
-		}
+		parseErr = s.parsePrint(token, iterator, &statementNode)
 	case domain.If:
-		err := s.parseIf(token, iterator, &statementNode)
-		if err != nil {
-			return nil, err
-		}
-
+		parseErr = s.parseIf(token, iterator, &statementNode)
 	case domain.Goto:
-		err := s.parseGoto(token, iterator, &statementNode)
-		if err != nil {
-			return nil, err
-		}
-
+		parseErr = s.parseGoto(token, iterator, &statementNode)
 	case domain.Input:
-		err := s.parseInput(token, iterator, &statementNode)
-		if err != nil {
-			return nil, err
-		}
-
+		parseErr = s.parseInput(token, iterator, &statementNode)
 	case domain.Let:
-		err := s.parseLet(token, iterator, &statementNode)
-		if err != nil {
-			return nil, err
-		}
-
+		parseErr = s.parseLet(token, iterator, &statementNode)
 	case domain.Gosub:
-		err := s.parseGosub(token, iterator, &statementNode)
-		if err != nil {
-			return nil, err
-		}
-
-	case domain.Return:
-	case domain.Clear:
-	case domain.List:
-	case domain.Run:
-	case domain.End:
+		parseErr = s.parseGosub(token, iterator, &statementNode)
+	case domain.Return, domain.Clear, domain.List, domain.Run, domain.End:
 		statementNode.AddChildToken(token)
 		iterator.Next()
-
 	default:
 		return nil, fmt.Errorf("unexpected statement: %v", token.Type)
 	}
 
+	if parseErr != nil {
+		return nil, parseErr
+	}
+
 	return &statementNode, nil
 }
-
 func (s statementParser) parsePrint(
 	token domain.Token,
 	iterator *domain.TokenIterator,
