@@ -38,7 +38,10 @@ func (e expressionParser) Parse(iterator *domain.TokenIterator) (*domain.Node, e
 		expressionNode.AddChild(termNode)
 
 		token, err = iterator.Current()
-		if err != nil || (token.Type != domain.Plus && token.Type != domain.Minus) {
+		if err != nil {
+			return nil, err
+		}
+		if token.Type != domain.Plus && token.Type != domain.Minus {
 			break
 		}
 	}
