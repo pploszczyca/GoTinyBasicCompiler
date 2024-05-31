@@ -35,4 +35,5 @@ const (
 	ExpressionListNode
 	TermNode
 	FactorNode
+	RelopNode
 )
