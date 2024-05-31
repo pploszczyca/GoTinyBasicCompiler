@@ -333,23 +333,6 @@ func TestStatementParser_Parse(t *testing.T) {
 			{Type: domain.Cr},
 		}
 		iterator := domain.NewTokenIterator(tokens)
-		expectedStatementNode := &domain.Node{
-			Type: domain.StatementNode,
-			Children: []*domain.Node{
-				{Token: tokens[0]},
-				expressionNode,
-				relopNode,
-				expressionNode,
-				{Token: domain.Token{Type: domain.Then}},
-				{
-					Type: domain.StatementNode, Children: []*domain.Node{
-						{Token: domain.Token{Type: domain.Print}},
-						{Type: domain.ExpressionNode},
-					},
-				},
-			},
-		}
-		// TODO: Repair tests, remove expectedStatementNode and check each field separately
 
 		sp := NewStatementParser(
 			fakeExpressionListParser,
@@ -362,8 +345,35 @@ func TestStatementParser_Parse(t *testing.T) {
 		if err != nil {
 			t.Errorf("Unexpected error: %v", err)
 		}
-		if !reflect.DeepEqual(statementNode, expectedStatementNode) {
-			t.Errorf("Expected %v, got %v", expectedStatementNode, statementNode)
+		if statementNode.Type != domain.StatementNode {
+			t.Errorf("Expected StatementNode, got %v", statementNode.Type)
+		}
+		if len(statementNode.Children) != 6 {
+			t.Errorf("Expected 6 children, got %v", len(statementNode.Children))
+		}
+		if statementNode.Children[0].Token.Type != domain.If {
+			t.Errorf("Expected first child to be If token, got %v", statementNode.Children[0].Token.Type)
+		}
+		if statementNode.Children[1].Type != domain.ExpressionNode {
+			t.Errorf("Expected second child to be ExpressionNode, got %v", statementNode.Children[1].Type)
+		}
+		if statementNode.Children[2].Type != domain.RelopNode {
+			t.Errorf("Expected third child to be RelopNode, got %v", statementNode.Children[2].Type)
+		}
+		if statementNode.Children[3].Type != domain.ExpressionNode {
+			t.Errorf("Expected fourth child to be ExpressionNode, got %v", statementNode.Children[3].Type)
+		}
+		if statementNode.Children[4].Token.Type != domain.Then {
+			t.Errorf("Expected fifth child to be Then token, got %v", statementNode.Children[4].Token.Type)
+		}
+		if statementNode.Children[5].Type != domain.StatementNode {
+			t.Errorf("Expected sixth child to be StatementNode, got %v", statementNode.Children[5].Type)
+		}
+		if statementNode.Children[5].Children[0].Token.Type != domain.Print {
+			t.Errorf("Expected sixth child to be Print token, got %v", statementNode.Children[5].Children[0].Token.Type)
+		}
+		if statementNode.Children[5].Children[1].Type != domain.ExpressionListNode {
+			t.Errorf("Expected sixth child to be ExpressionListNode, got %v", statementNode.Children[5].Children[1].Type)
 		}
 	})
 }
