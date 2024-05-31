@@ -36,4 +36,5 @@ const (
 	TermNode
 	FactorNode
 	RelopNode
+	VarListNode
 )
