@@ -25,6 +25,7 @@ func (v varListParser) Parse(iterator *domain.TokenIterator) (*domain.Node, erro
 			return nil, fmt.Errorf("expected identifier")
 		}
 		varListNode.AddChildToken(token)
+		iterator.Next()
 
 		commaToken, err := iterator.Current()
 		if err != nil {
@@ -34,6 +35,7 @@ func (v varListParser) Parse(iterator *domain.TokenIterator) (*domain.Node, erro
 			break
 		}
 		varListNode.AddChildToken(commaToken)
+		iterator.Next()
 	}
 
 	return &varListNode, nil
