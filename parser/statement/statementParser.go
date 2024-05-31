@@ -79,6 +79,16 @@ func (s statementParser) Parse(iterator *domain.TokenIterator) (*domain.Node, er
 		}
 		statementNode.AddChild(ifStatementNode)
 
+	case domain.Goto:
+		statementNode.AddChildToken(token)
+		iterator.Next()
+
+		expressionNode, err := s.expressionParser.Parse(iterator)
+		if err != nil {
+			return nil, err
+		}
+		statementNode.AddChild(expressionNode)
+
 	// TODO: Implement parsing of other statements
 
 	default:

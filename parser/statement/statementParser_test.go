@@ -10,7 +10,7 @@ import (
 
 func TestStatementParser_Parse(t *testing.T) {
 	t.Run("parses print statement", func(t *testing.T) {
-		expressionListNode := &domain.Node{Type: domain.ExpressionNode}
+		expressionListNode := &domain.Node{Type: domain.ExpressionListNode}
 		fakeExpressionListParser := testutils.FakeNodeParser{
 			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
 				iterator.Next()
@@ -26,7 +26,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			Type: domain.StatementNode,
 			Children: []*domain.Node{
 				{Token: tokens[0]},
-				{Type: domain.ExpressionNode},
+				{Type: domain.ExpressionListNode},
 			},
 		}
 
@@ -374,6 +374,70 @@ func TestStatementParser_Parse(t *testing.T) {
 		}
 		if statementNode.Children[5].Children[1].Type != domain.ExpressionListNode {
 			t.Errorf("Expected sixth child to be ExpressionListNode, got %v", statementNode.Children[5].Children[1].Type)
+		}
+	})
+
+	t.Run("returns error when goto token and expression parser returns error", func(t *testing.T) {
+		expectedError := fmt.Errorf("parse error")
+		fakeExpressionParser := testutils.FakeNodeParser{
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				return nil, expectedError
+			},
+		}
+		tokens := []domain.Token{
+			{Type: domain.Goto},
+			{Type: domain.String},
+			{Type: domain.Cr},
+		}
+		iterator := domain.NewTokenIterator(tokens)
+
+		sp := NewStatementParser(
+			&testutils.FakeNodeParser{},
+			fakeExpressionParser,
+			&testutils.FakeNodeParser{},
+		)
+
+		_, err := sp.Parse(&iterator)
+
+		if !reflect.DeepEqual(err, expectedError) {
+			t.Errorf("Expected error %v, got %v", expectedError, err)
+		}
+	})
+
+	t.Run("returns successful goto node", func(t *testing.T) {
+		expressionNode := &domain.Node{Type: domain.ExpressionNode}
+		fakeExpressionParser := testutils.FakeNodeParser{
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				iterator.Next()
+				return expressionNode, nil
+			},
+		}
+		tokens := []domain.Token{
+			{Type: domain.Goto},
+			{Type: domain.String},
+		}
+		iterator := domain.NewTokenIterator(tokens)
+		expectedStatementNode := &domain.Node{
+			Type: domain.StatementNode,
+			Children: []*domain.Node{
+				{Token: tokens[0]},
+				{Type: domain.ExpressionNode},
+			},
+		}
+
+		sp := NewStatementParser(
+			&testutils.FakeNodeParser{},
+			fakeExpressionParser,
+			&testutils.FakeNodeParser{},
+		)
+
+		statementNode, err := sp.Parse(&iterator)
+
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+		if !reflect.DeepEqual(statementNode, expectedStatementNode) {
+			t.Errorf("Expected %v, got %v", expectedStatementNode, statementNode)
 		}
 	})
 }
