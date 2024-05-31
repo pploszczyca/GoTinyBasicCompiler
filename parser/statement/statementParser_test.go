@@ -518,5 +518,239 @@ func TestStatementParser_Parse(t *testing.T) {
 		}
 	})
 
-	// TODO: Add tests for let, gosub, return, clear, list, run, end
+	t.Run("parses let statement successfully", func(t *testing.T) {
+		expressionNode := &domain.Node{Type: domain.ExpressionNode}
+		fakeExpressionParser := testutils.FakeNodeParser{
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				iterator.Next()
+				return expressionNode, nil
+			},
+		}
+		tokens := []domain.Token{
+			{Type: domain.Let},
+			{Type: domain.Identifier},
+			{Type: domain.Equal},
+			{Type: domain.Identifier},
+		}
+		iterator := domain.NewTokenIterator(tokens)
+		expectedStatementNode := &domain.Node{
+			Type: domain.StatementNode,
+			Children: []*domain.Node{
+				{Token: tokens[0]},
+				{Token: tokens[1]},
+				{Token: tokens[2]},
+				{Type: domain.ExpressionNode},
+			},
+		}
+
+		sp := NewStatementParser(
+			&testutils.FakeNodeParser{},
+			fakeExpressionParser,
+			&testutils.FakeNodeParser{},
+			&testutils.FakeNodeParser{},
+		)
+
+		statementNode, err := sp.Parse(&iterator)
+
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+		if !reflect.DeepEqual(statementNode, expectedStatementNode) {
+			t.Errorf("Expected %v, got %v", expectedStatementNode, statementNode)
+		}
+	})
+
+	t.Run("returns error when expression parser returns error", func(t *testing.T) {
+		expectedError := fmt.Errorf("parse error")
+		fakeExpressionParser := testutils.FakeNodeParser{
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				return nil, expectedError
+			},
+		}
+		tokens := []domain.Token{
+			{Type: domain.Let},
+			{Type: domain.Identifier},
+			{Type: domain.Equal},
+			{Type: domain.Identifier},
+		}
+		iterator := domain.NewTokenIterator(tokens)
+
+		sp := NewStatementParser(
+			&testutils.FakeNodeParser{},
+			fakeExpressionParser,
+			&testutils.FakeNodeParser{},
+			&testutils.FakeNodeParser{},
+		)
+
+		_, err := sp.Parse(&iterator)
+
+		if !reflect.DeepEqual(err, expectedError) {
+			t.Errorf("Expected error %v, got %v", expectedError, err)
+		}
+	})
+
+	t.Run("returns error when expected equal token is not found", func(t *testing.T) {
+		fakeExpressionParser := testutils.FakeNodeParser{
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				iterator.Next()
+				return &domain.Node{Type: domain.ExpressionNode}, nil
+			},
+		}
+		tokens := []domain.Token{
+			{Type: domain.Let},
+			{Type: domain.Identifier},
+			{Type: domain.Identifier},
+		}
+		iterator := domain.NewTokenIterator(tokens)
+		expectedError := fmt.Errorf("expected equal")
+
+		sp := NewStatementParser(
+			&testutils.FakeNodeParser{},
+			fakeExpressionParser,
+			&testutils.FakeNodeParser{},
+			&testutils.FakeNodeParser{},
+		)
+
+		_, err := sp.Parse(&iterator)
+
+		if !reflect.DeepEqual(err, expectedError) {
+			t.Errorf("Expected error %v, got %v", expectedError, err)
+		}
+	})
+
+	t.Run("returns error when expected identifier token is not found", func(t *testing.T) {
+		fakeExpressionParser := testutils.FakeNodeParser{
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				iterator.Next()
+				return &domain.Node{Type: domain.ExpressionNode}, nil
+			},
+		}
+		tokens := []domain.Token{
+			{Type: domain.Let},
+			{Type: domain.Equal},
+			{Type: domain.Identifier},
+		}
+		iterator := domain.NewTokenIterator(tokens)
+		expectedError := fmt.Errorf("expected identifier")
+
+		sp := NewStatementParser(
+			&testutils.FakeNodeParser{},
+			fakeExpressionParser,
+			&testutils.FakeNodeParser{},
+			&testutils.FakeNodeParser{},
+		)
+
+		_, err := sp.Parse(&iterator)
+
+		if !reflect.DeepEqual(err, expectedError) {
+			t.Errorf("Expected error %v, got %v", expectedError, err)
+		}
+	})
+
+	t.Run("parses gosub statement successfully", func(t *testing.T) {
+		expressionNode := &domain.Node{Type: domain.ExpressionNode}
+		fakeExpressionParser := testutils.FakeNodeParser{
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				iterator.Next()
+				return expressionNode, nil
+			},
+		}
+		tokens := []domain.Token{
+			{Type: domain.Gosub},
+			{Type: domain.Identifier},
+		}
+		iterator := domain.NewTokenIterator(tokens)
+		expectedStatementNode := &domain.Node{
+			Type: domain.StatementNode,
+			Children: []*domain.Node{
+				{Token: tokens[0]},
+				{Type: domain.ExpressionNode},
+			},
+		}
+
+		sp := NewStatementParser(
+			&testutils.FakeNodeParser{},
+			fakeExpressionParser,
+			&testutils.FakeNodeParser{},
+			&testutils.FakeNodeParser{},
+		)
+
+		statementNode, err := sp.Parse(&iterator)
+
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+		if !reflect.DeepEqual(statementNode, expectedStatementNode) {
+			t.Errorf("Expected %v, got %v", expectedStatementNode, statementNode)
+		}
+	})
+
+	t.Run("returns error when expression parser returns error", func(t *testing.T) {
+		expectedError := fmt.Errorf("parse error")
+		fakeExpressionParser := testutils.FakeNodeParser{
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				return nil, expectedError
+			},
+		}
+		tokens := []domain.Token{
+			{Type: domain.Gosub},
+			{Type: domain.Identifier},
+		}
+		iterator := domain.NewTokenIterator(tokens)
+
+		sp := NewStatementParser(
+			&testutils.FakeNodeParser{},
+			fakeExpressionParser,
+			&testutils.FakeNodeParser{},
+			&testutils.FakeNodeParser{},
+		)
+
+		_, err := sp.Parse(&iterator)
+
+		if !reflect.DeepEqual(err, expectedError) {
+			t.Errorf("Expected error %v, got %v", expectedError, err)
+		}
+	})
+
+	testCases := []struct {
+		token domain.Token
+	}{
+		{token: domain.Token{Type: domain.Return}},
+		{token: domain.Token{Type: domain.Clear}},
+		{token: domain.Token{Type: domain.List}},
+		{token: domain.Token{Type: domain.Run}},
+		{token: domain.Token{Type: domain.End}},
+	}
+
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("parses %v statement successfully", tc.token.Type), func(t *testing.T) {
+			tokens := []domain.Token{
+				tc.token,
+			}
+			iterator := domain.NewTokenIterator(tokens)
+			expectedStatementNode := &domain.Node{
+				Type: domain.StatementNode,
+				Children: []*domain.Node{
+					{Token: tokens[0]},
+				},
+			}
+
+			sp := NewStatementParser(
+				&testutils.FakeNodeParser{},
+				&testutils.FakeNodeParser{},
+				&testutils.FakeNodeParser{},
+				&testutils.FakeNodeParser{},
+			)
+
+			statementNode, err := sp.Parse(&iterator)
+
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			if !reflect.DeepEqual(statementNode, expectedStatementNode) {
+				t.Errorf("Expected %v, got %v", expectedStatementNode, statementNode)
+			}
+		})
+
+	}
 }
