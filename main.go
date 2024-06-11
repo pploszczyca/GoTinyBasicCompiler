@@ -29,6 +29,7 @@ func main() {
 		log.Fatalf("Error parsing program arguments: %v", err)
 	}
 
+	log.Printf("Reading program from file %v", programArgs.FilePath)
 	programCode, err := os.ReadFile(programArgs.FilePath)
 	if err != nil {
 		log.Fatal(err)
