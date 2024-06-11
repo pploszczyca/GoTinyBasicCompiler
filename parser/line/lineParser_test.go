@@ -92,6 +92,7 @@ func TestLineParser_Parse(t *testing.T) {
 		tokens := []domain.Token{
 			{Type: domain.Number},
 			{Type: domain.Identifier},
+			{Type: domain.Number},
 		}
 		iterator := domain.NewTokenIterator(tokens)
 

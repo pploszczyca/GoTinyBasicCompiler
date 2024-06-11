@@ -80,7 +80,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			{Type: domain.Identifier},
 		}
 		iterator := domain.NewTokenIterator(tokens)
-		expectedError := fmt.Errorf("unexpected statement: 2")
+		expectedError := fmt.Errorf("unexpected statement: Identifier")
 
 		sp := NewStatementParser(
 			&testutils.FakeNodeParser{},

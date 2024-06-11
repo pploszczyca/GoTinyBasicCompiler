@@ -3,7 +3,7 @@ package parser
 import (
 	"GoTinyBasicCompiler/domain"
 	"GoTinyBasicCompiler/testutils"
-	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -31,11 +31,12 @@ func TestParser_Parse(t *testing.T) {
 	})
 
 	t.Run("returns error when line parser returns error", func(t *testing.T) {
-		expectedError := errors.New("parse error")
+		parserError := fmt.Errorf("parse error")
+		expectedError := fmt.Errorf("error parsing line 1: %v", parserError)
 		fakeLineParser := &testutils.FakeNodeParser{
 			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
 				iterator.Next()
-				return nil, expectedError
+				return nil, parserError
 			},
 		}
 		tokens := []domain.Token{{}}
@@ -43,8 +44,8 @@ func TestParser_Parse(t *testing.T) {
 		p := NewParser(fakeLineParser)
 		_, err := p.Parse(tokens)
 
-		if !errors.Is(err, expectedError) {
-			t.Errorf("Expected error %v, got %v", expectedError, err)
+		if err.Error() != expectedError.Error() {
+			t.Errorf("Expected error: %v, got %v", expectedError, err)
 		}
 	})
 
