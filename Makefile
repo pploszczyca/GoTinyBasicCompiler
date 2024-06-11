@@ -12,7 +12,7 @@ GO_FMT=go fmt
 GO_VET=go vet
 
 # Targets
-.PHONY: all build clean test format vet run
+.PHONY: all build clean test format vet runSample
 
 all: build
 
@@ -34,5 +34,8 @@ vet:
 	$(GO_VET) ./...
 
 run: build
-	$(BUILD_DIR)/$(BINARY_NAME) input.txt output.txt
+	$(BUILD_DIR)/$(BINARY_NAME) ./...
+
+runSample: build
+	$(BUILD_DIR)/$(BINARY_NAME) ./samples/sampleTinyBasic.bas ./results/sampleTinyBasic.c
 
