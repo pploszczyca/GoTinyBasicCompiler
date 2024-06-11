@@ -2,6 +2,7 @@ package parser
 
 import (
 	"GoTinyBasicCompiler/domain"
+	"fmt"
 )
 
 type Parser interface {
@@ -27,13 +28,15 @@ func NewParser(
 func (p *parser) Parse(tokens []domain.Token) (domain.ProgramTree, error) {
 	iterator := domain.NewTokenIterator(tokens)
 	programTree := domain.ProgramTree{}
+	lineIndex := 1
 
 	for iterator.HasNext() {
 		node, err := p.lineParser.Parse(&iterator)
 		if err != nil {
-			return domain.ProgramTree{}, err
+			return domain.ProgramTree{}, fmt.Errorf("error parsing line %d: %v", lineIndex, err)
 		}
 		programTree.Nodes = append(programTree.Nodes, node)
+		lineIndex++
 	}
 
 	return programTree, nil

@@ -1,4 +1,4 @@
-package GoTinyBasicCompiler
+package main
 
 import (
 	lexerModule "GoTinyBasicCompiler/lexer"
@@ -51,11 +51,13 @@ func compile(programCode string) (string, error) {
 	lexer := lexerModule.NewLexer()
 	parser := newParser()
 
+	log.Printf("Lexing program")
 	tokens, err := lexer.Lex(programCode)
 	if err != nil {
 		return "", fmt.Errorf("error lexing program: %v", err)
 	}
 
+	log.Printf("Parsing program")
 	programTree, err := parser.Parse(tokens)
 	if err != nil {
 		return "", fmt.Errorf("error parsing program: %v", err)
