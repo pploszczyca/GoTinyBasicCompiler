@@ -43,7 +43,7 @@ func (l lineParser) Parse(iterator *domain.TokenIterator) (*domain.Node, error) 
 		return nil, err
 	}
 
-	if token.Type != domain.Cr {
+	if token.Type != domain.Cr && token.Type != domain.Eof {
 		return nil, fmt.Errorf("expected CR token, but got %v", token.Type)
 	}
 
