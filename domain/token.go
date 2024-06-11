@@ -49,6 +49,47 @@ const (
 	RParen    TokenType = 304
 )
 
+var tokenTypeToString = map[TokenType]string{
+	Eof:                "Eof",
+	Cr:                 "Cr",
+	Number:             "Number",
+	Identifier:         "Identifier",
+	String:             "String",
+	Print:              "Print",
+	If:                 "If",
+	Then:               "Then",
+	Goto:               "Goto",
+	Input:              "Input",
+	Let:                "Let",
+	Gosub:              "Gosub",
+	Return:             "Return",
+	Clear:              "Clear",
+	List:               "List",
+	Run:                "Run",
+	End:                "End",
+	Plus:               "Plus",
+	Minus:              "Minus",
+	Multiply:           "Multiply",
+	Divide:             "Divide",
+	Equal:              "Equal",
+	LessThan:           "LessThan",
+	GreaterThan:        "GreaterThan",
+	LessThanOrEqual:    "LessThanOrEqual",
+	GreaterThanOrEqual: "GreaterThanOrEqual",
+	NotEqual:           "NotEqual",
+	Comma:              "Comma",
+	Semicolon:          "Semicolon",
+	LParen:             "LParen",
+	RParen:             "RParen",
+}
+
+func (t TokenType) String() string {
+	if str, ok := tokenTypeToString[t]; ok {
+		return str
+	}
+	return fmt.Sprintf("Unknown TokenType (%d)", t)
+}
+
 type TokenIterator struct {
 	currentIndex int
 	tokens       []Token

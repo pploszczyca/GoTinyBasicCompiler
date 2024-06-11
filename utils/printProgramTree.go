@@ -7,27 +7,32 @@ import (
 
 func PrintProgramTree(tree *domain.ProgramTree) {
 	for _, node := range tree.Nodes {
-		printNode(node, 0)
+		printNode(node, "", true)
 	}
 }
 
-func printNode(node *domain.Node, depth int) {
-	prefix := getPrefix(depth)
-
+func printNode(node *domain.Node, prefix string, isTail bool) {
 	if len(node.Children) > 0 {
-		fmt.Printf("%sNode Type: %d\n", prefix, node.Type)
-		for _, child := range node.Children {
-			printNode(child, depth+1)
+		fmt.Printf("%s%sNODE: %s\n", prefix, getBranch(isTail), node.Type)
+		newPrefix := getNewPrefix(prefix, isTail)
+		for i, child := range node.Children {
+			printNode(child, newPrefix, i == len(node.Children)-1)
 		}
 	} else {
-		fmt.Printf("%sToken Type: %d, Value: %s\n", prefix, node.Token.Type, node.Token.Value)
+		fmt.Printf("%s%sTOKEN Type: %s, Value: %s\n", prefix, getBranch(isTail), node.Token.Type, node.Token.Value)
 	}
 }
 
-func getPrefix(depth int) string {
-	prefix := ""
-	for i := 0; i < depth; i++ {
-		prefix += "--"
+func getBranch(isTail bool) string {
+	if isTail {
+		return "└── "
 	}
-	return prefix
+	return "├── "
+}
+
+func getNewPrefix(prefix string, isTail bool) string {
+	if isTail {
+		return prefix + "    "
+	}
+	return prefix + "│   "
 }

@@ -1,5 +1,7 @@
 package domain
 
+import "fmt"
+
 type ProgramTree struct {
 	Nodes []*Node
 }
@@ -38,3 +40,25 @@ const (
 	RelopNode
 	VarListNode
 )
+
+var nodeTypeToString = map[NodeType]string{
+	ProgramNode:        "ProgramNode",
+	StatementNode:      "StatementNode",
+	ExpressionNode:     "ExpressionNode",
+	NumberNode:         "NumberNode",
+	IdentifierNode:     "IdentifierNode",
+	OperatorNode:       "OperatorNode",
+	LineNode:           "LineNode",
+	ExpressionListNode: "ExpressionListNode",
+	TermNode:           "TermNode",
+	FactorNode:         "FactorNode",
+	RelopNode:          "RelopNode",
+	VarListNode:        "VarListNode",
+}
+
+func (n NodeType) String() string {
+	if str, ok := nodeTypeToString[n]; ok {
+		return str
+	}
+	return fmt.Sprintf("Unknown NodeType (%d)", n)
+}
