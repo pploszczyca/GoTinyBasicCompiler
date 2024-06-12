@@ -1,6 +1,7 @@
 package main
 
 import (
+	emiterModule "GoTinyBasicCompiler/emiter"
 	lexerModule "GoTinyBasicCompiler/lexer"
 	"GoTinyBasicCompiler/parser/expression"
 	"GoTinyBasicCompiler/parser/expressionList"
@@ -50,6 +51,7 @@ func main() {
 func compile(programCode string) (string, error) {
 	lexer := lexerModule.NewLexer()
 	parser := newParser()
+	emiter := emiterModule.NewCEmitter()
 
 	log.Printf("Lexing program")
 	tokens, err := lexer.Lex(programCode)
@@ -66,7 +68,13 @@ func compile(programCode string) (string, error) {
 	fmt.Printf("Program tree:\n")
 	utils.PrintProgramTree(&programTree)
 
-	return "", nil
+	log.Printf("Emiting program")
+	compiledCode, err := emiter.Emit(&programTree)
+	if err != nil {
+		return "", fmt.Errorf("error emiting program: %v", err)
+	}
+
+	return compiledCode, nil
 }
 
 func newParser() parserModule.Parser {
