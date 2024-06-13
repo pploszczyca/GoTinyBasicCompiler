@@ -86,6 +86,63 @@ int main() {
 `,
 			tokenEmitter: NewCTokenEmitter(),
 		},
+		{
+			name: "returns C program with if statement",
+			programTree: &domain.ProgramTree{
+				Nodes: []*domain.Node{
+					{
+						Type: domain.LineNode,
+						Children: []*domain.Node{
+							{Type: domain.NumberNode, Token: domain.Token{Type: domain.Number, Value: "10"}},
+							{
+								Type: domain.StatementNode,
+								Children: []*domain.Node{
+									{Token: domain.Token{Type: domain.If}},
+									{
+										Type: domain.ExpressionNode,
+										Children: []*domain.Node{
+											{Token: domain.Token{Type: domain.Identifier, Value: "A"}},
+										},
+									},
+									{
+										Type: domain.RelopNode,
+										Children: []*domain.Node{
+											{Token: domain.Token{Type: domain.LessThan}},
+										},
+									},
+									{
+										Type: domain.ExpressionNode,
+										Children: []*domain.Node{
+											{Token: domain.Token{Type: domain.Number, Value: "5"}},
+										},
+									},
+									{Token: domain.Token{Type: domain.Then}},
+									{
+										Type: domain.StatementNode,
+										Children: []*domain.Node{
+											{Token: domain.Token{Type: domain.Print}},
+											{
+												Type: domain.ExpressionListNode,
+												Children: []*domain.Node{
+													{Token: domain.Token{Type: domain.String, Value: "\"Hello\""}},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedResult: `#include <stdio.h>
+int main() {
+    label_10:
+    if (A<5) printf("%s", "Hello");
+}
+`,
+			tokenEmitter: NewCTokenEmitter(),
+		},
 	}
 
 	for _, tt := range tests {

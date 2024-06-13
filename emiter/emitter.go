@@ -87,6 +87,12 @@ func (c *cEmitter) emitNode(builder *strings.Builder, node *domain.Node, indent 
 			}
 		}
 	case domain.RelopNode:
+		for _, child := range node.Children {
+			err := c.emitNode(builder, child, indent)
+			if err != nil {
+				return err
+			}
+		}
 	case domain.VarListNode:
 		for _, child := range node.Children {
 			err := c.emitNode(builder, child, indent)
@@ -163,7 +169,7 @@ func (c *cEmitter) emitStatementNode(builder *strings.Builder, node *domain.Node
 			return err
 		}
 		builder.WriteString(stringToken)
-		builder.WriteString("(")
+		builder.WriteString(" (")
 
 		for _, child := range node.Children[1:] {
 			if child.Token.Type == domain.Then {
