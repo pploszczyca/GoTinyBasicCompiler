@@ -37,7 +37,9 @@ func NewCompiler(
 	}
 }
 
+// TODO: Add tests for this function
 func (c *compiler) Compile(args Args) (string, error) {
+	// TODO: Add time measurements
 	c.printIfRequired("Lexing program", args.ShouldShowLogs)
 	tokens, err := c.lexer.Lex(args.SourceCode)
 	if err != nil {
