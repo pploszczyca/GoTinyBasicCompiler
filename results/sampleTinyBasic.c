@@ -15,11 +15,11 @@ int main() {
     label_70:
     scanfD;
     label_80:
-    if(D10) goto110;
+    if (D>10) goto label_110;
     label_90:
     printf("%s", "THE NUMBER IS LESS THAN OR EQUAL TO 10");
     label_100:
-    goto120;
+    goto label_120;
     label_110:
     printf("%s", "THE NUMBER IS GREATER THAN 10");
     label_120:

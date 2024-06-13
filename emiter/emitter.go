@@ -182,6 +182,16 @@ func (c *cEmitter) emitStatementNode(builder *strings.Builder, node *domain.Node
 			}
 		}
 
+	case domain.Goto:
+		stringToken, err := c.tokenEmitter.Emit(node.Children[0].Token)
+		if err != nil {
+			return err
+		}
+		builder.WriteString(stringToken)
+		builder.WriteString(" label_")
+
+		return c.emitNode(builder, node.Children[1], indent)
+
 	default:
 		for _, child := range node.Children {
 			err := c.emitNode(builder, child, indent)

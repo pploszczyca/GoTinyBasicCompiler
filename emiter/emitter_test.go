@@ -143,6 +143,48 @@ int main() {
 `,
 			tokenEmitter: NewCTokenEmitter(),
 		},
+		{
+			name: "returns C program with goto statement",
+			programTree: &domain.ProgramTree{
+				Nodes: []*domain.Node{
+					{
+						Type: domain.LineNode,
+						Children: []*domain.Node{
+							{Type: domain.NumberNode, Token: domain.Token{Type: domain.Number, Value: "10"}},
+							{
+								Type: domain.StatementNode,
+								Children: []*domain.Node{
+									{Token: domain.Token{Type: domain.Goto}},
+									{
+										Type: domain.ExpressionNode,
+										Children: []*domain.Node{
+											{
+												Type: domain.TermNode,
+												Children: []*domain.Node{
+													{
+														Type: domain.FactorNode,
+														Children: []*domain.Node{
+															{Token: domain.Token{Type: domain.Number, Value: "20"}},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedResult: `#include <stdio.h>
+int main() {
+    label_10:
+    goto label_20;
+}
+`,
+			tokenEmitter: NewCTokenEmitter(),
+		},
 	}
 
 	for _, tt := range tests {
