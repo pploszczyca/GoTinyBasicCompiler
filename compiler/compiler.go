@@ -1,0 +1,71 @@
+package compiler
+
+import (
+	"GoTinyBasicCompiler/emiter"
+	"GoTinyBasicCompiler/lexer"
+	"GoTinyBasicCompiler/parser"
+	"GoTinyBasicCompiler/utils"
+	"fmt"
+	"log"
+)
+
+type Args struct {
+	SourceCode            string
+	ShouldShowLogs        bool
+	ShouldShowProgramTree bool
+}
+
+type Compiler interface {
+	Compile(args Args) (string, error)
+}
+
+type compiler struct {
+	lexer   lexer.Lexer
+	parser  parser.Parser
+	emitter emiter.Emitter
+}
+
+func NewCompiler(
+	lexer lexer.Lexer,
+	parser parser.Parser,
+	emitter emiter.Emitter,
+) Compiler {
+	return &compiler{
+		lexer:   lexer,
+		parser:  parser,
+		emitter: emitter,
+	}
+}
+
+func (c *compiler) Compile(args Args) (string, error) {
+	c.printIfRequired("Lexing program", args.ShouldShowLogs)
+	tokens, err := c.lexer.Lex(args.SourceCode)
+	if err != nil {
+		return "", fmt.Errorf("error lexing program: %v", err)
+	}
+
+	c.printIfRequired("Parsing program", args.ShouldShowLogs)
+	programTree, err := c.parser.Parse(tokens)
+	if err != nil {
+		return "", fmt.Errorf("error parsing program: %v", err)
+	}
+
+	if args.ShouldShowProgramTree {
+		fmt.Printf("Program tree:\n")
+		utils.PrintProgramTree(&programTree)
+	}
+
+	c.printIfRequired("Emitting program", args.ShouldShowLogs)
+	compiledCode, err := c.emitter.Emit(&programTree)
+	if err != nil {
+		return "", fmt.Errorf("error emiting program: %v", err)
+	}
+
+	return compiledCode, nil
+}
+
+func (c *compiler) printIfRequired(message string, showLogs bool) {
+	if showLogs {
+		log.Printf(message)
+	}
+}

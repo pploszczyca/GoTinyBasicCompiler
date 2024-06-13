@@ -1,6 +1,7 @@
 package main
 
 import (
+	"GoTinyBasicCompiler/compiler"
 	emiterModule "GoTinyBasicCompiler/emiter"
 	lexerModule "GoTinyBasicCompiler/lexer"
 	"GoTinyBasicCompiler/parser/expression"
@@ -11,7 +12,6 @@ import (
 	"GoTinyBasicCompiler/parser/statement"
 	"GoTinyBasicCompiler/parser/term"
 	"GoTinyBasicCompiler/parser/varList"
-	"GoTinyBasicCompiler/utils"
 	"fmt"
 	"log"
 	"os"
@@ -36,7 +36,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	compiledCode, err := compile(string(programCode))
+	c := createCompiler()
+	compiledCode, err := c.Compile(compiler.Args{
+		SourceCode:            string(programCode),
+		ShouldShowLogs:        true,
+		ShouldShowProgramTree: false,
+	})
 	if err != nil {
 		log.Fatalf("Error compiling program: %v", err)
 	}
@@ -46,52 +51,6 @@ func main() {
 		log.Fatalf("Error writing compiled code to file: %v", err)
 	}
 	log.Printf("Program compiled successfully")
-}
-
-func compile(programCode string) (string, error) {
-	lexer := lexerModule.NewLexer()
-	parser := newParser()
-	emiter := emiterModule.NewCEmitter(
-		emiterModule.NewCTokenEmitter(),
-	)
-
-	log.Printf("Lexing program")
-	tokens, err := lexer.Lex(programCode)
-	if err != nil {
-		return "", fmt.Errorf("error lexing program: %v", err)
-	}
-
-	log.Printf("Parsing program")
-	programTree, err := parser.Parse(tokens)
-	if err != nil {
-		return "", fmt.Errorf("error parsing program: %v", err)
-	}
-
-	fmt.Printf("Program tree:\n")
-	utils.PrintProgramTree(&programTree)
-
-	log.Printf("Emiting program")
-	compiledCode, err := emiter.Emit(&programTree)
-	if err != nil {
-		return "", fmt.Errorf("error emiting program: %v", err)
-	}
-
-	return compiledCode, nil
-}
-
-func newParser() parserModule.Parser {
-	var expressionParser parserModule.NodeParser
-
-	factorParser := factor.NewFactorParser(expressionParser)
-	termParser := term.NewTermParser(factorParser)
-	expressionParser = expression.NewExpressionParser(termParser)
-	expressionListParser := expressionList.NewExpressionListParser(expressionParser)
-	relopParser := relop.NewRelopParser()
-	varListParser := varList.NewVarListParser()
-	statementParser := statement.NewStatementParser(expressionListParser, expressionParser, relopParser, varListParser)
-	lineParser := line.NewLineParser(statementParser)
-
-	return parserModule.NewParser(lineParser)
 }
 
 func parseProgramArguments() (ProgramArguments, error) {
@@ -108,4 +67,29 @@ func parseProgramArguments() (ProgramArguments, error) {
 	}
 
 	return programArgs, nil
+}
+
+func createCompiler() compiler.Compiler {
+	lexer := lexerModule.NewLexer()
+	parser := newParser()
+	emitter := emiterModule.NewCEmitter(
+		emiterModule.NewCTokenEmitter(),
+	)
+
+	return compiler.NewCompiler(lexer, parser, emitter)
+}
+
+func newParser() parserModule.Parser {
+	var expressionParser parserModule.NodeParser
+
+	factorParser := factor.NewFactorParser(expressionParser)
+	termParser := term.NewTermParser(factorParser)
+	expressionParser = expression.NewExpressionParser(termParser)
+	expressionListParser := expressionList.NewExpressionListParser(expressionParser)
+	relopParser := relop.NewRelopParser()
+	varListParser := varList.NewVarListParser()
+	statementParser := statement.NewStatementParser(expressionListParser, expressionParser, relopParser, varListParser)
+	lineParser := line.NewLineParser(statementParser)
+
+	return parserModule.NewParser(lineParser)
 }
