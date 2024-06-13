@@ -31,6 +31,7 @@ func TestCTokenEmitter_Emit(t *testing.T) {
 		{domain.Token{Type: domain.Semicolon}, ";"},
 		{domain.Token{Type: domain.LParen}, "("},
 		{domain.Token{Type: domain.RParen}, ")"},
+		{domain.Token{Type: domain.End}, "return 0"},
 	}
 
 	for _, test := range tests {

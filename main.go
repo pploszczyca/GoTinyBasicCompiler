@@ -51,7 +51,9 @@ func main() {
 func compile(programCode string) (string, error) {
 	lexer := lexerModule.NewLexer()
 	parser := newParser()
-	emiter := emiterModule.NewCEmitter()
+	emiter := emiterModule.NewCEmitter(
+		emiterModule.NewCTokenEmitter(),
+	)
 
 	log.Printf("Lexing program")
 	tokens, err := lexer.Lex(programCode)
