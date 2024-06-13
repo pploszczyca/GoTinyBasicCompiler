@@ -25,7 +25,7 @@ func (l *lexer) Lex(inputCode string) ([]domain.Token, error) {
 	for i, line := range lines {
 		tokens, err := lexLine(line)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error lexing line %d: %v", i+1, err)
 		}
 		if i != len(lines)-1 {
 			tokens = append(tokens, domain.Token{Type: domain.Cr})
@@ -116,7 +116,7 @@ func readAnotherToken(line string, currentIndex int) (domain.Token, int, error) 
 
 	for currentIndex < len(line) {
 		char := line[currentIndex]
-		if char == ' ' || char == '\n' {
+		if char == ' ' || char == '\n' || char == ',' {
 			return lexAnother(result, currentIndex)
 		}
 		result += string(char)

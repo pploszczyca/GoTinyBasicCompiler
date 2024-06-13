@@ -13,7 +13,7 @@ GO_VET=go vet
 CHMOD=chmod +x
 
 # Targets
-.PHONY: all build clean test format vet run runSample runSampleAndRunCode
+.PHONY: all build clean test format vet run runSample runSampleAndRunCode runSampleAndRunCode2
 
 all: build
 
@@ -45,3 +45,8 @@ runSampleAndRunCode: build
 	 $(BUILD_DIR)/$(BINARY_NAME) ./samples/sampleTinyBasic.bas ./results/sampleTinyBasic.c
 	 gcc -o ./results/sampleTinyBasic ./results/sampleTinyBasic.c
 	 ./results/sampleTinyBasic
+
+ runSampleAndRunCode2: build
+	 $(BUILD_DIR)/$(BINARY_NAME) ./samples/sampleTinyBasic2.bas ./results/sampleTinyBasic2.c
+	 gcc -o ./results/sampleTinyBasic2 ./results/sampleTinyBasic2.c
+	 ./results/sampleTinyBasic2
