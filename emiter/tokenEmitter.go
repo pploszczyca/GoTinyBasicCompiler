@@ -23,7 +23,7 @@ func (c *cTokenEmitter) Emit(token domain.Token) (string, error) {
 	case domain.Identifier:
 		return token.Value, nil
 	case domain.String:
-		return fmt.Sprintf("\"%s\"", token.Value), nil
+		return token.Value, nil
 	case domain.Print:
 		return "printf", nil
 	case domain.Input:
@@ -58,6 +58,12 @@ func (c *cTokenEmitter) Emit(token domain.Token) (string, error) {
 		return ")", nil
 	case domain.End:
 		return "return 0", nil
+	case domain.Let:
+		return "int", nil
+	case domain.If:
+		return "if", nil
+	case domain.Goto:
+		return "goto", nil
 	}
 
 	return "", fmt.Errorf("Unknown token type: %s\n", token.Type)

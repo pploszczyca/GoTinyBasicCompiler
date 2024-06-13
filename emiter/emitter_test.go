@@ -30,7 +30,7 @@ int main() {
 			Type: domain.LineNode,
 			Children: []*domain.Node{
 				{Type: domain.NumberNode, Token: domain.Token{Type: domain.Number, Value: "10"}},
-				{Type: domain.IdentifierNode, Token: endToken},
+				{Type: domain.StatementNode, Children: []*domain.Node{{Token: endToken}}},
 			},
 		}
 		programTree := &domain.ProgramTree{Nodes: []*domain.Node{lineNode}}
@@ -64,7 +64,7 @@ int main() {
 						{
 							Type: domain.ExpressionListNode,
 							Children: []*domain.Node{
-								{Token: domain.Token{Type: domain.String, Value: "Hello"}},
+								{Token: domain.Token{Type: domain.String, Value: "\"Hello\""}},
 								{Token: domain.Token{Type: domain.Comma}},
 								{Token: domain.Token{Type: domain.Identifier, Value: "A"}},
 								{Token: domain.Token{Type: domain.Comma}},
