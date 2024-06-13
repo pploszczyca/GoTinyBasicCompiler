@@ -185,6 +185,41 @@ int main() {
 `,
 			tokenEmitter: NewCTokenEmitter(),
 		},
+		{
+			name: "returns C program with input statement",
+			programTree: &domain.ProgramTree{
+				Nodes: []*domain.Node{
+					{
+						Type: domain.LineNode,
+						Children: []*domain.Node{
+							{Type: domain.NumberNode, Token: domain.Token{Type: domain.Number, Value: "10"}},
+							{
+								Type: domain.StatementNode,
+								Children: []*domain.Node{
+									{Token: domain.Token{Type: domain.Input}},
+									{
+										Type: domain.VarListNode,
+										Children: []*domain.Node{
+											{Token: domain.Token{Type: domain.Identifier, Value: "A"}},
+											{Token: domain.Token{Type: domain.Comma}},
+											{Token: domain.Token{Type: domain.Identifier, Value: "B"}},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedResult: `#include <stdio.h>
+int main() {
+    label_10:
+    int A, B;
+    scanf("%d,%d", &A, &B);
+}
+`,
+			tokenEmitter: NewCTokenEmitter(),
+		},
 	}
 
 	for _, tt := range tests {

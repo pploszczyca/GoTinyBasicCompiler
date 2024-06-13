@@ -192,6 +192,49 @@ func (c *cEmitter) emitStatementNode(builder *strings.Builder, node *domain.Node
 
 		return c.emitNode(builder, node.Children[1], indent)
 
+	case domain.Input:
+		builder.WriteString("int ")
+		inputNode := node.Children[0]
+		varListNode := node.Children[1]
+
+		for _, child := range varListNode.Children {
+			err := c.emitNode(builder, child, indent)
+			if err != nil {
+				return err
+			}
+		}
+
+		builder.WriteString(";\n")
+		builder.WriteString(strings.Repeat("    ", indent))
+
+		stringToken, err := c.tokenEmitter.Emit(inputNode.Token)
+		if err != nil {
+			return err
+		}
+		builder.WriteString(stringToken)
+		builder.WriteString("(\"")
+
+		for _, child := range varListNode.Children {
+			if child.Token.Type == domain.Comma {
+				builder.WriteString(",")
+			} else {
+				builder.WriteString("%d")
+			}
+		}
+
+		builder.WriteString("\", ")
+
+		for _, child := range varListNode.Children {
+			if child.Token.Type != domain.Comma {
+				builder.WriteString("&")
+			}
+			err := c.emitNode(builder, child, indent)
+			if err != nil {
+				return err
+			}
+		}
+		builder.WriteString(")")
+
 	default:
 		for _, child := range node.Children {
 			err := c.emitNode(builder, child, indent)
