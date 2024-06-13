@@ -138,14 +138,12 @@ func (c *cEmitter) emitStatementNode(builder *strings.Builder, node *domain.Node
 		for _, child := range expressionListNode.Children {
 			if child.Token.Type == domain.String {
 				builder.WriteString("%s")
-			} else if child.Token.Type == domain.Comma {
-				builder.WriteString(",")
-			} else {
+			} else if child.Token.Type != domain.Comma {
 				builder.WriteString("%d")
 			}
 		}
 
-		builder.WriteString("\", ")
+		builder.WriteString("\\n\", ")
 
 		err = c.emitNode(builder, expressionListNode, indent)
 		if err != nil {

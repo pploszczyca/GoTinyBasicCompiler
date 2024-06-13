@@ -81,7 +81,7 @@ int main() {
 			expectedResult: `#include <stdio.h>
 int main() {
     label_10:
-    printf("%s,%d,%d", "Hello", A, 1+2);
+    printf("%s%d%d\n", "Hello", A, 1+2);
 }
 `,
 			tokenEmitter: NewCTokenEmitter(),
@@ -138,7 +138,7 @@ int main() {
 			expectedResult: `#include <stdio.h>
 int main() {
     label_10:
-    if (A<5) printf("%s", "Hello");
+    if (A<5) printf("%s\n", "Hello");
 }
 `,
 			tokenEmitter: NewCTokenEmitter(),
