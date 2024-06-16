@@ -24,14 +24,11 @@ func NewCEmitter(
 func (c *cEmitter) Emit(programTree *domain.ProgramTree) (string, error) {
 	var builder strings.Builder
 
-	builder.WriteString("#include <stdio.h>\n")
-	builder.WriteString("int main() {\n")
+	builder.WriteString("#include <stdio.h>\nint main() {\n")
 
-	for _, node := range programTree.Nodes {
-		err := c.emitNode(&builder, node, 1)
-		if err != nil {
-			return "", err
-		}
+	err := c.emitMultipleNodes(&builder, programTree.Nodes, 1)
+	if err != nil {
+		return "", err
 	}
 
 	builder.WriteString("}\n")
@@ -56,50 +53,20 @@ func (c *cEmitter) emitNode(builder *strings.Builder, node *domain.Node, indent 
 	case domain.StatementNode:
 		return c.emitStatementNode(builder, node, indent)
 	case domain.ExpressionNode:
-		for _, child := range node.Children {
-			err := c.emitNode(builder, child, indent)
-			if err != nil {
-				return err
-			}
-		}
+		return c.emitMultipleNodes(builder, node.Children, indent)
 	case domain.NumberNode:
 	case domain.IdentifierNode:
 	case domain.OperatorNode:
 	case domain.ExpressionListNode:
-		for _, child := range node.Children {
-			err := c.emitNode(builder, child, indent)
-			if err != nil {
-				return err
-			}
-		}
+		return c.emitMultipleNodes(builder, node.Children, indent)
 	case domain.TermNode:
-		for _, child := range node.Children {
-			err := c.emitNode(builder, child, indent)
-			if err != nil {
-				return err
-			}
-		}
+		return c.emitMultipleNodes(builder, node.Children, indent)
 	case domain.FactorNode:
-		for _, child := range node.Children {
-			err := c.emitNode(builder, child, indent)
-			if err != nil {
-				return err
-			}
-		}
+		return c.emitMultipleNodes(builder, node.Children, indent)
 	case domain.RelopNode:
-		for _, child := range node.Children {
-			err := c.emitNode(builder, child, indent)
-			if err != nil {
-				return err
-			}
-		}
+		return c.emitMultipleNodes(builder, node.Children, indent)
 	case domain.VarListNode:
-		for _, child := range node.Children {
-			err := c.emitNode(builder, child, indent)
-			if err != nil {
-				return err
-			}
-		}
+		return c.emitMultipleNodes(builder, node.Children, indent)
 	}
 
 	return nil
@@ -107,19 +74,18 @@ func (c *cEmitter) emitNode(builder *strings.Builder, node *domain.Node, indent 
 
 func (c *cEmitter) emitLineNode(builder *strings.Builder, node *domain.Node, indent int) error {
 	statementIndex := 0
-	builder.WriteString(strings.Repeat("    ", indent))
+	c.writeIndent(builder, indent)
 	if node.Children[0].Type == domain.NumberNode {
 		builder.WriteString("label_" + node.Children[0].Token.Value + ":\n")
 		statementIndex = 1
-		builder.WriteString(strings.Repeat("    ", indent))
+		c.writeIndent(builder, indent)
 	}
 
-	for _, child := range node.Children[statementIndex:] {
-		err := c.emitNode(builder, child, indent)
-		if err != nil {
-			return err
-		}
+	err := c.emitMultipleNodes(builder, node.Children[statementIndex:], indent)
+	if err != nil {
+		return err
 	}
+
 	builder.WriteString(";\n")
 	return nil
 }
@@ -131,8 +97,7 @@ func (c *cEmitter) emitStatementNode(builder *strings.Builder, node *domain.Node
 		if err != nil {
 			return err
 		}
-		builder.WriteString(stringToken)
-		builder.WriteString("(\"")
+		builder.WriteString(stringToken + "(\"")
 		expressionListNode := node.Children[1]
 
 		for _, child := range expressionListNode.Children {
@@ -166,8 +131,7 @@ func (c *cEmitter) emitStatementNode(builder *strings.Builder, node *domain.Node
 		if err != nil {
 			return err
 		}
-		builder.WriteString(stringToken)
-		builder.WriteString(" (")
+		builder.WriteString(stringToken + " (")
 
 		for _, child := range node.Children[1:] {
 			if child.Token.Type == domain.Then {
@@ -185,8 +149,7 @@ func (c *cEmitter) emitStatementNode(builder *strings.Builder, node *domain.Node
 		if err != nil {
 			return err
 		}
-		builder.WriteString(stringToken)
-		builder.WriteString(" label_")
+		builder.WriteString(stringToken + " label_")
 
 		return c.emitNode(builder, node.Children[1], indent)
 
@@ -195,22 +158,19 @@ func (c *cEmitter) emitStatementNode(builder *strings.Builder, node *domain.Node
 		inputNode := node.Children[0]
 		varListNode := node.Children[1]
 
-		for _, child := range varListNode.Children {
-			err := c.emitNode(builder, child, indent)
-			if err != nil {
-				return err
-			}
+		err := c.emitMultipleNodes(builder, varListNode.Children, indent)
+		if err != nil {
+			return err
 		}
 
 		builder.WriteString(";\n")
-		builder.WriteString(strings.Repeat("    ", indent))
+		c.writeIndent(builder, indent)
 
 		stringToken, err := c.tokenEmitter.Emit(inputNode.Token)
 		if err != nil {
 			return err
 		}
-		builder.WriteString(stringToken)
-		builder.WriteString("(\"")
+		builder.WriteString(stringToken + "(\"")
 
 		for _, child := range varListNode.Children {
 			if child.Token.Type == domain.Comma {
@@ -234,13 +194,22 @@ func (c *cEmitter) emitStatementNode(builder *strings.Builder, node *domain.Node
 		builder.WriteString(")")
 
 	default:
-		for _, child := range node.Children {
-			err := c.emitNode(builder, child, indent)
-			if err != nil {
-				return err
-			}
-		}
+		return c.emitMultipleNodes(builder, node.Children, indent)
 	}
 
 	return nil
+}
+
+func (c *cEmitter) emitMultipleNodes(builder *strings.Builder, nodes []*domain.Node, indent int) error {
+	for _, child := range nodes {
+		err := c.emitNode(builder, child, indent)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *cEmitter) writeIndent(builder *strings.Builder, indent int) {
+	builder.WriteString(strings.Repeat("    ", indent))
 }
