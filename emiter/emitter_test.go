@@ -3,6 +3,8 @@ package emiter
 import (
 	"GoTinyBasicCompiler/domain"
 	"GoTinyBasicCompiler/testutils"
+	"errors"
+	"fmt"
 	"testing"
 )
 
@@ -236,5 +238,29 @@ int main() {
 		})
 	}
 
-	// TODO: Add failure test cases
+	t.Run("returns error when token emitter fails", func(t *testing.T) {
+		fakeError := fmt.Errorf("fake error")
+		tokenEmitter := &testutils.FakeTokenEmitter{
+			EmitMock: func(token domain.Token) (string, error) {
+				return "", fakeError
+			},
+		}
+		programTree := &domain.ProgramTree{
+			Nodes: []*domain.Node{
+				{
+					Type: domain.LineNode,
+					Children: []*domain.Node{
+						{Token: domain.Token{Type: domain.Number, Value: "10"}},
+					},
+				},
+			},
+		}
+
+		emitter := NewCEmitter(tokenEmitter)
+		_, err := emitter.Emit(programTree)
+
+		if !errors.Is(err, fakeError) {
+			t.Errorf("Expected error: %s, but got: %s\n", fakeError, err)
+		}
+	})
 }
