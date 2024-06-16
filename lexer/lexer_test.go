@@ -233,7 +233,7 @@ func TestLexer(t *testing.T) {
 
 	t.Run("returns error for invalid token", func(t *testing.T) {
 		inputCode := "abcd"
-		expectedError := fmt.Errorf("invalid token: abcd")
+		expectedError := fmt.Errorf("error lexing line 1: invalid token: abcd")
 
 		_, err := lexer.Lex(inputCode)
 

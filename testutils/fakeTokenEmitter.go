@@ -7,5 +7,9 @@ type FakeTokenEmitter struct {
 }
 
 func (f FakeTokenEmitter) Emit(token domain.Token) (string, error) {
+	if f.EmitMock == nil {
+		panic("TokenEmitter.Emit run but it should not have been called")
+	}
+
 	return f.EmitMock(token)
 }
