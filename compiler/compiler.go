@@ -1,12 +1,11 @@
 package compiler
 
 import (
+	"GoTinyBasicCompiler/domain"
 	"GoTinyBasicCompiler/emiter"
 	"GoTinyBasicCompiler/lexer"
 	"GoTinyBasicCompiler/parser"
-	"GoTinyBasicCompiler/utils"
 	"fmt"
-	"log"
 )
 
 type Args struct {
@@ -20,20 +19,26 @@ type Compiler interface {
 }
 
 type compiler struct {
-	lexer   lexer.Lexer
-	parser  parser.Parser
-	emitter emiter.Emitter
+	lexer            lexer.Lexer
+	parser           parser.Parser
+	emitter          emiter.Emitter
+	printf           func(format string, v ...any) (n int, err error)
+	printProgramTree func(tree *domain.ProgramTree)
 }
 
 func NewCompiler(
 	lexer lexer.Lexer,
 	parser parser.Parser,
 	emitter emiter.Emitter,
+	printf func(format string, v ...any) (n int, err error),
+	printProgramTree func(tree *domain.ProgramTree),
 ) Compiler {
 	return &compiler{
-		lexer:   lexer,
-		parser:  parser,
-		emitter: emitter,
+		lexer:            lexer,
+		parser:           parser,
+		emitter:          emitter,
+		printf:           printf,
+		printProgramTree: printProgramTree,
 	}
 }
 
@@ -54,7 +59,7 @@ func (c *compiler) Compile(args Args) (string, error) {
 
 	if args.ShouldShowProgramTree {
 		fmt.Printf("Program tree:\n")
-		utils.PrintProgramTree(&programTree)
+		c.printProgramTree(&programTree)
 	}
 
 	c.printIfRequired("Emitting program", args.ShouldShowLogs)
@@ -68,6 +73,6 @@ func (c *compiler) Compile(args Args) (string, error) {
 
 func (c *compiler) printIfRequired(message string, showLogs bool) {
 	if showLogs {
-		log.Printf(message)
+		_, _ = c.printf(message)
 	}
 }

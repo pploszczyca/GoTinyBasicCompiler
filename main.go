@@ -12,6 +12,7 @@ import (
 	"GoTinyBasicCompiler/parser/statement"
 	"GoTinyBasicCompiler/parser/term"
 	"GoTinyBasicCompiler/parser/varList"
+	"GoTinyBasicCompiler/utils"
 	"fmt"
 	"log"
 	"os"
@@ -76,7 +77,13 @@ func createCompiler() compiler.Compiler {
 		emiterModule.NewCTokenEmitter(),
 	)
 
-	return compiler.NewCompiler(lexer, parser, emitter)
+	return compiler.NewCompiler(
+		lexer,
+		parser,
+		emitter,
+		fmt.Printf,
+		utils.PrintProgramTree,
+	)
 }
 
 func newParser() parserModule.Parser {
