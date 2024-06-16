@@ -157,9 +157,9 @@ func TestCompiler_Compile(t *testing.T) {
 			return 0, nil
 		}
 		expectedPrints := []string{
-			"Lexing program",
-			"Parsing program",
-			"Emitting program",
+			"Lexing program\n",
+			"Parsing program\n",
+			"Emitting program\n",
 		}
 
 		compiler := NewCompiler(lexer, parser, emitter, printfMock, noOpPrintProgramTree)
@@ -210,11 +210,11 @@ func TestCompiler_Compile(t *testing.T) {
 			actualPrints = append(actualPrints, "Printed program tree")
 		}
 		expectedPrints := []string{
-			"Lexing program",
-			"Parsing program",
+			"Lexing program\n",
+			"Parsing program\n",
 			"Program tree:\n",
 			"Printed program tree",
-			"Emitting program",
+			"Emitting program\n",
 		}
 
 		compiler := NewCompiler(lexer, parser, emitter, printfMock, printProgramTreeMock)
