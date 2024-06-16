@@ -59,7 +59,7 @@ func lexLine(line string) ([]domain.Token, error) {
 			}
 			tokens = append(tokens, token)
 			currentIndex = newIndex
-		} else {
+		} else if char != ' ' {
 			token, newIndex, err := readAnotherToken(line, currentIndex)
 			if err != nil {
 				return nil, err
@@ -117,6 +117,10 @@ func readAnotherToken(line string, currentIndex int) (domain.Token, int, error) 
 	for currentIndex < len(line) {
 		char := line[currentIndex]
 		if char == ' ' || char == '\n' || char == ',' {
+			if char == ',' {
+				currentIndex--
+			}
+
 			return lexAnother(result, currentIndex)
 		}
 		result += string(char)

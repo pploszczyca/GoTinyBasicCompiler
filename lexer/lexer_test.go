@@ -245,4 +245,29 @@ func TestLexer(t *testing.T) {
 			t.Errorf("expected %v, but got %v", expectedError, err)
 		}
 	})
+
+	t.Run("returns correct tokens for print statement with multiple expressions", func(t *testing.T) {
+		inputCode := "260 PRINT K, \" SQUARED IS \", Q\n"
+		expectedTokens := []domain.Token{
+			{Type: domain.Number, Value: "260"},
+			{Type: domain.Print},
+			{Type: domain.Identifier, Value: "K"},
+			{Type: domain.Comma},
+			{Type: domain.String, Value: "\" SQUARED IS \""},
+			{Type: domain.Comma},
+			{Type: domain.Identifier, Value: "Q"},
+			{Type: domain.Cr},
+			{Type: domain.Eof},
+		}
+
+		tokens, err := lexer.Lex(inputCode)
+
+		if err != nil {
+			t.Errorf("error should be nil, but got %v", err)
+		}
+
+		if !reflect.DeepEqual(tokens, expectedTokens) {
+			t.Errorf("expected %v, but got %v", expectedTokens, tokens)
+		}
+	})
 }
