@@ -42,7 +42,6 @@ func NewCompiler(
 	}
 }
 
-// TODO: Add tests for this function
 func (c *compiler) Compile(args Args) (string, error) {
 	// TODO: Add time measurements
 	c.printIfRequired("Lexing program", args.ShouldShowLogs)
@@ -58,14 +57,14 @@ func (c *compiler) Compile(args Args) (string, error) {
 	}
 
 	if args.ShouldShowProgramTree {
-		fmt.Printf("Program tree:\n")
-		c.printProgramTree(&programTree)
+		_, _ = c.printf("Program tree:\n")
+		c.printProgramTree(programTree)
 	}
 
 	c.printIfRequired("Emitting program", args.ShouldShowLogs)
-	compiledCode, err := c.emitter.Emit(&programTree)
+	compiledCode, err := c.emitter.Emit(programTree)
 	if err != nil {
-		return "", fmt.Errorf("error emiting program: %v", err)
+		return "", fmt.Errorf("error emitting program: %v", err)
 	}
 
 	return compiledCode, nil
