@@ -19,6 +19,10 @@ func NewLexer() Lexer {
 }
 
 func (l *lexer) Lex(inputCode string) ([]domain.Token, error) {
+	return l.sequentialLex(inputCode)
+}
+
+func (l *lexer) sequentialLex(inputCode string) ([]domain.Token, error) {
 	lines := strings.Split(inputCode, "\n")
 	var result []domain.Token
 
