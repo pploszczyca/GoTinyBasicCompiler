@@ -81,7 +81,7 @@ func createCompiler() compiler.Compiler {
 		lexer,
 		parser,
 		emitter,
-		fmt.Printf,
+		log.Printf,
 		utils.PrintProgramTree,
 	)
 }

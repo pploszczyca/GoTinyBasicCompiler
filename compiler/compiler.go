@@ -5,7 +5,9 @@ import (
 	"GoTinyBasicCompiler/emiter"
 	"GoTinyBasicCompiler/lexer"
 	"GoTinyBasicCompiler/parser"
+	"GoTinyBasicCompiler/utils"
 	"fmt"
+	"time"
 )
 
 type Args struct {
@@ -22,7 +24,7 @@ type compiler struct {
 	lexer            lexer.Lexer
 	parser           parser.Parser
 	emitter          emiter.Emitter
-	printf           func(format string, v ...any) (n int, err error)
+	printf           func(format string, v ...any)
 	printProgramTree func(tree *domain.ProgramTree)
 }
 
@@ -30,7 +32,7 @@ func NewCompiler(
 	lexer lexer.Lexer,
 	parser parser.Parser,
 	emitter emiter.Emitter,
-	printf func(format string, v ...any) (n int, err error),
+	printf func(format string, v ...any),
 	printProgramTree func(tree *domain.ProgramTree),
 ) Compiler {
 	return &compiler{
@@ -45,24 +47,33 @@ func NewCompiler(
 func (c *compiler) Compile(args Args) (string, error) {
 	// TODO: Add time measurements
 	c.printIfRequired("Lexing program\n", args.ShouldShowLogs)
-	tokens, err := c.lexer.Lex(args.SourceCode)
+	tokens, duration, err := utils.MeasureTime(func() ([]domain.Token, error) {
+		return c.lexer.Lex(args.SourceCode)
+	})
+	c.printDurationIfRequired("Lexing", duration, args.ShouldShowLogs)
 	if err != nil {
 		return "", fmt.Errorf("error lexing program: %v", err)
 	}
 
 	c.printIfRequired("Parsing program\n", args.ShouldShowLogs)
-	programTree, err := c.parser.Parse(tokens)
+	programTree, duration, err := utils.MeasureTime(func() (*domain.ProgramTree, error) {
+		return c.parser.Parse(tokens)
+	})
+	c.printDurationIfRequired("Parsing", duration, args.ShouldShowLogs)
 	if err != nil {
 		return "", fmt.Errorf("error parsing program: %v", err)
 	}
 
 	if args.ShouldShowProgramTree {
-		_, _ = c.printf("Program tree:\n")
+		c.printf("Program tree:\n")
 		c.printProgramTree(programTree)
 	}
 
 	c.printIfRequired("Emitting program\n", args.ShouldShowLogs)
-	compiledCode, err := c.emitter.Emit(programTree)
+	compiledCode, duration, err := utils.MeasureTime(func() (string, error) {
+		return c.emitter.Emit(programTree)
+	})
+	c.printDurationIfRequired("Emitting", duration, args.ShouldShowLogs)
 	if err != nil {
 		return "", fmt.Errorf("error emitting program: %v", err)
 	}
@@ -72,6 +83,12 @@ func (c *compiler) Compile(args Args) (string, error) {
 
 func (c *compiler) printIfRequired(message string, showLogs bool) {
 	if showLogs {
-		_, _ = c.printf(message)
+		c.printf(message)
+	}
+}
+
+func (c *compiler) printDurationIfRequired(testCase string, duration time.Duration, showLogs bool) {
+	if showLogs {
+		c.printf("%s time elapsed: %.6f seconds\n", testCase, duration.Seconds())
 	}
 }
