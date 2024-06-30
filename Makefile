@@ -40,9 +40,11 @@ run: build
 
 runSample: build
 	$(BUILD_DIR)/$(BINARY_NAME) ./samples/sampleTinyBasic.bas ./results/sampleTinyBasic.c
+	gcc -o ./results/sampleTinyBasic ./results/sampleTinyBasic.c
 
 runSample2: build
 	$(BUILD_DIR)/$(BINARY_NAME) ./samples/sampleTinyBasic2.bas ./results/sampleTinyBasic2.c
+	gcc -o ./results/sampleTinyBasic2 ./results/sampleTinyBasic2.c
 
 runSampleAndRunCode: build
 	 $(BUILD_DIR)/$(BINARY_NAME) ./samples/sampleTinyBasic.bas ./results/sampleTinyBasic.c

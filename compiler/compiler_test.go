@@ -152,14 +152,16 @@ func TestCompiler_Compile(t *testing.T) {
 			ShouldShowProgramTree: false,
 		}
 		var actualPrints []string
-		printfMock := func(format string, v ...interface{}) (n int, err error) {
+		printfMock := func(format string, v ...interface{}) {
 			actualPrints = append(actualPrints, fmt.Sprintf(format, v...))
-			return 0, nil
 		}
 		expectedPrints := []string{
 			"Lexing program\n",
+			"Lexing time elapsed: 0.000000 seconds\n",
 			"Parsing program\n",
+			"Parsing time elapsed: 0.000000 seconds\n",
 			"Emitting program\n",
+			"Emitting time elapsed: 0.000000 seconds\n",
 		}
 
 		compiler := NewCompiler(lexer, parser, emitter, printfMock, noOpPrintProgramTree)
@@ -202,19 +204,21 @@ func TestCompiler_Compile(t *testing.T) {
 			ShouldShowProgramTree: true,
 		}
 		var actualPrints []string
-		printfMock := func(format string, v ...interface{}) (n int, err error) {
+		printfMock := func(format string, v ...interface{}) {
 			actualPrints = append(actualPrints, fmt.Sprintf(format, v...))
-			return 0, nil
 		}
 		printProgramTreeMock := func(tree *domain.ProgramTree) {
 			actualPrints = append(actualPrints, "Printed program tree")
 		}
 		expectedPrints := []string{
 			"Lexing program\n",
+			"Lexing time elapsed: 0.000000 seconds\n",
 			"Parsing program\n",
+			"Parsing time elapsed: 0.000000 seconds\n",
 			"Program tree:\n",
 			"Printed program tree",
 			"Emitting program\n",
+			"Emitting time elapsed: 0.000000 seconds\n",
 		}
 
 		compiler := NewCompiler(lexer, parser, emitter, printfMock, printProgramTreeMock)
@@ -232,7 +236,7 @@ func TestCompiler_Compile(t *testing.T) {
 	})
 }
 
-func noOpPrint(format string, v ...interface{}) (n int, err error) {
+func noOpPrint(format string, v ...interface{}) {
 	panic("printf run but it should not have been called")
 }
 

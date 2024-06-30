@@ -3,11 +3,11 @@ int main() {
     label_10:
     printf("%s\n", "HELLO, WORLD!");
     label_20:
-    int A = 10 ;
+    int A = 10;
     label_30:
-    int B = 20 ;
+    int B = 20;
     label_40:
-    int C = A+B ;
+    int C = A+B;
     label_50:
     printf("%s%d\n", "A + B = ", C);
     label_60:
@@ -24,7 +24,7 @@ int main() {
     label_110:
     printf("%s\n", "THE NUMBER IS GREATER THAN 10");
     label_120:
-    int E = 1+2+3+4+5 ;
+    int E = 1+2+3+4+5;
     label_130:
     printf("%s%d\n", "SUM OF 1 TO 5 = ", E);
     label_140:

@@ -45,7 +45,6 @@ func NewCompiler(
 }
 
 func (c *compiler) Compile(args Args) (string, error) {
-	// TODO: Add time measurements
 	c.printIfRequired("Lexing program\n", args.ShouldShowLogs)
 	tokens, duration, err := utils.MeasureTime(func() ([]domain.Token, error) {
 		return c.lexer.Lex(args.SourceCode)

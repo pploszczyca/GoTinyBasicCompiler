@@ -146,12 +146,15 @@ func (c *cEmitter) emitStatementNode(
 			childIndex = 1
 		}
 
-		for _, child := range node.Children[childIndex:] {
+		children := node.Children[childIndex:]
+		for index, child := range children {
 			err := c.emitNode(builder, child, previousIdentifiers, indent)
 			if err != nil {
 				return err
 			}
-			builder.WriteString(" ")
+			if index != len(children)-1 {
+				builder.WriteString(" ")
+			}
 		}
 
 	case domain.If:

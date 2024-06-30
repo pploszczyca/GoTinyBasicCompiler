@@ -222,6 +222,52 @@ int main() {
 `,
 			tokenEmitter: NewCTokenEmitter(),
 		},
+		{
+			name: "returns C program with setting multiple times value to the identifier",
+			programTree: &domain.ProgramTree{
+				Nodes: []*domain.Node{
+					{
+						Type: domain.LineNode,
+						Children: []*domain.Node{
+							{Type: domain.NumberNode, Token: domain.Token{Type: domain.Number, Value: "10"}},
+							{
+								Type: domain.StatementNode,
+								Children: []*domain.Node{
+									{Token: domain.Token{Type: domain.Let}},
+									{Token: domain.Token{Type: domain.Identifier, Value: "A"}},
+									{Token: domain.Token{Type: domain.Equal}},
+									{Token: domain.Token{Type: domain.Number, Value: "1"}},
+								},
+							},
+						},
+					},
+					{
+						Type: domain.LineNode,
+						Children: []*domain.Node{
+							{Type: domain.NumberNode, Token: domain.Token{Type: domain.Number, Value: "20"}},
+							{
+								Type: domain.StatementNode,
+								Children: []*domain.Node{
+									{Token: domain.Token{Type: domain.Let}},
+									{Token: domain.Token{Type: domain.Identifier, Value: "A"}},
+									{Token: domain.Token{Type: domain.Equal}},
+									{Token: domain.Token{Type: domain.Number, Value: "2"}},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedResult: `#include <stdio.h>
+int main() {
+    label_10:
+    int A = 1;
+    label_20:
+    A = 2;
+}
+`,
+			tokenEmitter: NewCTokenEmitter(),
+		},
 	}
 
 	for _, tt := range tests {
