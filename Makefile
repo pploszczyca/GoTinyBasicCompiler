@@ -3,6 +3,8 @@ BINARY_NAME=GoTinyBasicCompiler
 SRC_DIR=.
 BUILD_DIR=build
 MAIN_PACKAGE=$(SRC_DIR)/main.go
+SAMPLES_DIR=./samples
+RESULTS_DIR=./results
 
 # Commands
 GO_BUILD=go build
@@ -11,9 +13,13 @@ GO_TEST=go test
 GO_FMT=go fmt
 GO_VET=go vet
 CHMOD=chmod +x
+GCC=gcc
+
+# Sample files
+SAMPLES=sampleTinyBasic sampleTinyBasic2
 
 # Targets
-.PHONY: all build clean test format vet run runSample runSample2 runSampleAndRunCode runSampleAndRunCode2
+.PHONY: all build clean test format vet run buildSamples buildAndRunSamples
 
 all: build
 
@@ -24,7 +30,7 @@ build:
 
 clean:
 	$(GO_CLEAN)
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR) $(RESULTS_DIR)
 
 test:
 	$(GO_TEST) ./...
@@ -38,20 +44,13 @@ vet:
 run: build
 	$(BUILD_DIR)/$(BINARY_NAME) ./input.txt ./output.txt
 
-runSample: build
-	$(BUILD_DIR)/$(BINARY_NAME) ./samples/sampleTinyBasic.bas ./results/sampleTinyBasic.c
-	gcc -o ./results/sampleTinyBasic ./results/sampleTinyBasic.c
+buildSamples: build
+	@for sample in $(SAMPLES); do \
+		$(BUILD_DIR)/$(BINARY_NAME) $(SAMPLES_DIR)/$$sample.bas $(RESULTS_DIR)/$$sample.c; \
+		$(GCC) -o $(RESULTS_DIR)/$$sample $(RESULTS_DIR)/$$sample.c; \
+	done
 
-runSample2: build
-	$(BUILD_DIR)/$(BINARY_NAME) ./samples/sampleTinyBasic2.bas ./results/sampleTinyBasic2.c
-	gcc -o ./results/sampleTinyBasic2 ./results/sampleTinyBasic2.c
-
-runSampleAndRunCode: build
-	 $(BUILD_DIR)/$(BINARY_NAME) ./samples/sampleTinyBasic.bas ./results/sampleTinyBasic.c
-	 gcc -o ./results/sampleTinyBasic ./results/sampleTinyBasic.c
-	 ./results/sampleTinyBasic
-
- runSampleAndRunCode2: build
-	 $(BUILD_DIR)/$(BINARY_NAME) ./samples/sampleTinyBasic2.bas ./results/sampleTinyBasic2.c
-	 gcc -o ./results/sampleTinyBasic2 ./results/sampleTinyBasic2.c
-	 ./results/sampleTinyBasic2
+buildAndRunSamples: buildSamples
+	@for sample in $(SAMPLES); do \
+		./$(RESULTS_DIR)/$$sample; \
+	done
