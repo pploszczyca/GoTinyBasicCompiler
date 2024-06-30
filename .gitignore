@@ -24,3 +24,6 @@ go.work.sum
 .idea
 
 build
+
+results/sampleTinyBasic
+results/sampleTinyBasic2
