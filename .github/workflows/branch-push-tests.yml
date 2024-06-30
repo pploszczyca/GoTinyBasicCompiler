@@ -27,3 +27,9 @@ jobs:
 
       - name: Build samples
         run: make buildSamples
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@main
+        with:
+          name: GoTinyBasicCompiler
+          path: build/GoTinyBasicCompiler
