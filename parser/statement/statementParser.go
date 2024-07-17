@@ -50,7 +50,7 @@ func (s statementParser) Parse(iterator *domain.TokenIterator) (*domain.Node, er
 	case domain.Gosub:
 		parseErr = s.parseGosub(token, iterator, &statementNode)
 	case domain.While:
-		parseErr = s.parseWhen(token, iterator, &statementNode)
+		parseErr = s.parseWhile(token, iterator, &statementNode)
 	case domain.Return, domain.Clear, domain.List, domain.Run, domain.End, domain.Wend:
 		statementNode.AddChildToken(token)
 		iterator.Next()
@@ -212,7 +212,7 @@ func (s statementParser) parseGosub(
 	return nil
 }
 
-func (s statementParser) parseWhen(
+func (s statementParser) parseWhile(
 	token domain.Token,
 	iterator *domain.TokenIterator,
 	statementNode *domain.Node,
@@ -221,6 +221,18 @@ func (s statementParser) parseWhen(
 	iterator.Next()
 
 	expressionNode, err := s.expressionParser.Parse(iterator)
+	if err != nil {
+		return err
+	}
+	statementNode.AddChild(expressionNode)
+
+	relopNode, err := s.relopParser.Parse(iterator)
+	if err != nil {
+		return err
+	}
+	statementNode.AddChild(relopNode)
+
+	expressionNode, err = s.expressionParser.Parse(iterator)
 	if err != nil {
 		return err
 	}

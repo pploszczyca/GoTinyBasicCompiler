@@ -16,7 +16,7 @@ CHMOD=chmod +x
 GCC=gcc
 
 # Sample files
-SAMPLES=sampleTinyBasic sampleTinyBasic2
+SAMPLES=sampleTinyBasic sampleTinyBasic2 sampleTinyBasic3
 
 # Targets
 .PHONY: all build clean test format vet run buildSamples buildAndRunSamples
@@ -46,8 +46,10 @@ run: build
 
 buildSamples: build
 	@for sample in $(SAMPLES); do \
-		$(BUILD_DIR)/$(BINARY_NAME) $(SAMPLES_DIR)/$$sample.bas $(RESULTS_DIR)/$$sample.c; \
-		$(GCC) -o $(RESULTS_DIR)/$$sample $(RESULTS_DIR)/$$sample.c; \
+  		echo "BUILDING SAMPLE: $$sample"; \
+		$(BUILD_DIR)/$(BINARY_NAME) $(SAMPLES_DIR)/$$sample.bas $(RESULTS_DIR)/$$sample.c && \
+		$(GCC) -o $(RESULTS_DIR)/$$sample $(RESULTS_DIR)/$$sample.c && \
+		echo "DONE BUILDING SAMPLE: $$sample\n\n"; \
 	done
 
 buildAndRunSamples: buildSamples

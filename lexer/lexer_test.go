@@ -143,7 +143,7 @@ func TestLexer(t *testing.T) {
 			expectedToken: domain.Token{Type: domain.End},
 		},
 		{
-			inputCode:     "WHEN",
+			inputCode:     "WHILE",
 			expectedToken: domain.Token{Type: domain.While},
 		},
 		{

@@ -712,7 +712,7 @@ func TestStatementParser_Parse(t *testing.T) {
 		}
 	})
 
-	t.Run("parse when statement successfully", func(t *testing.T) {
+	t.Run("parse while statement successfully", func(t *testing.T) {
 		expressionNode := &domain.Node{Type: domain.ExpressionNode}
 		fakeExpressionParser := testutils.FakeNodeParser{
 			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
@@ -720,9 +720,17 @@ func TestStatementParser_Parse(t *testing.T) {
 				return expressionNode, nil
 			},
 		}
+		fakeRelopParser := testutils.FakeNodeParser{
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				iterator.Next()
+				return &domain.Node{Type: domain.RelopNode}, nil
+			},
+		}
 		tokens := []domain.Token{
 			{Type: domain.While},
 			{Type: domain.Identifier, Value: "A"},
+			{Type: domain.LessThan},
+			{Type: domain.Number, Value: "10"},
 		}
 		iterator := domain.NewTokenIterator(tokens)
 		expectedStatementNode := &domain.Node{
@@ -730,13 +738,15 @@ func TestStatementParser_Parse(t *testing.T) {
 			Children: []*domain.Node{
 				{Token: tokens[0]},
 				{Type: domain.ExpressionNode},
+				{Type: domain.RelopNode},
+				{Type: domain.ExpressionNode},
 			},
 		}
 
 		sp := NewStatementParser(
 			&testutils.FakeNodeParser{},
 			fakeExpressionParser,
-			&testutils.FakeNodeParser{},
+			fakeRelopParser,
 			&testutils.FakeNodeParser{},
 		)
 
