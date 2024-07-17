@@ -712,6 +712,44 @@ func TestStatementParser_Parse(t *testing.T) {
 		}
 	})
 
+	t.Run("parse when statement successfully", func(t *testing.T) {
+		expressionNode := &domain.Node{Type: domain.ExpressionNode}
+		fakeExpressionParser := testutils.FakeNodeParser{
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				iterator.Next()
+				return expressionNode, nil
+			},
+		}
+		tokens := []domain.Token{
+			{Type: domain.When},
+			{Type: domain.Identifier, Value: "A"},
+		}
+		iterator := domain.NewTokenIterator(tokens)
+		expectedStatementNode := &domain.Node{
+			Type: domain.StatementNode,
+			Children: []*domain.Node{
+				{Token: tokens[0]},
+				{Type: domain.ExpressionNode},
+			},
+		}
+
+		sp := NewStatementParser(
+			&testutils.FakeNodeParser{},
+			fakeExpressionParser,
+			&testutils.FakeNodeParser{},
+			&testutils.FakeNodeParser{},
+		)
+
+		statementNode, err := sp.Parse(&iterator)
+
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+		if !reflect.DeepEqual(statementNode, expectedStatementNode) {
+			t.Errorf("Expected %v, got %v", expectedStatementNode, statementNode)
+		}
+	})
+
 	testCases := []struct {
 		token domain.Token
 	}{
@@ -720,6 +758,7 @@ func TestStatementParser_Parse(t *testing.T) {
 		{token: domain.Token{Type: domain.List}},
 		{token: domain.Token{Type: domain.Run}},
 		{token: domain.Token{Type: domain.End}},
+		{token: domain.Token{Type: domain.Wend}},
 	}
 
 	for _, tc := range testCases {
