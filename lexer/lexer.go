@@ -180,6 +180,10 @@ func parseToKeyword(value string) (domain.Token, error) {
 		return domain.Token{Type: domain.Run}, nil
 	case "END":
 		return domain.Token{Type: domain.End}, nil
+	case "WHEN":
+		return domain.Token{Type: domain.When}, nil
+	case "WEND":
+		return domain.Token{Type: domain.Wend}, nil
 	}
 
 	return domain.Token{}, fmt.Errorf("invalid keyword")

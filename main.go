@@ -58,7 +58,7 @@ func parseProgramArguments() (ProgramArguments, error) {
 	args := os.Args
 
 	if len(args) != 3 {
-		return ProgramArguments{}, fmt.Errorf("expected 1 argument, got %v", len(args)-1)
+		return ProgramArguments{}, fmt.Errorf("expected 2 arguments, got %v", len(args)-1)
 	}
 
 	programArgs := ProgramArguments{
