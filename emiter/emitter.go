@@ -103,7 +103,10 @@ func (c *cEmitter) emitLineNode(
 		return err
 	}
 
-	builder.WriteString(";\n")
+	if c.shouldWriteEndLine(node) {
+		builder.WriteString(";")
+	}
+	builder.WriteString("\n")
 	return nil
 }
 
@@ -224,6 +227,20 @@ func (c *cEmitter) emitStatementNode(
 		}
 		builder.WriteString(")")
 
+	case domain.While:
+		stringToken, err := c.tokenEmitter.Emit(node.Children[0].Token)
+		if err != nil {
+			return err
+		}
+
+		builder.WriteString(stringToken + " (")
+		err = c.emitNode(builder, node.Children[1], previousIdentifiers, indent)
+		if err != nil {
+			return err
+		}
+
+		builder.WriteString(") {")
+
 	default:
 		return c.emitMultipleNodes(builder, node.Children, previousIdentifiers, indent)
 	}
@@ -244,6 +261,20 @@ func (c *cEmitter) emitMultipleNodes(
 		}
 	}
 	return nil
+}
+
+func (c *cEmitter) shouldWriteEndLine(node *domain.Node) bool {
+	if node.IsLeaf() {
+		tokenType := node.Token.Type
+		return tokenType != domain.While && tokenType != domain.Wend
+	}
+
+	for _, child := range node.Children {
+		if !c.shouldWriteEndLine(child) {
+			return false
+		}
+	}
+	return true
 }
 
 func (c *cEmitter) writeIndent(builder *strings.Builder, indent int) {

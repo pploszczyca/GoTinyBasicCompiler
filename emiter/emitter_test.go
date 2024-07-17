@@ -268,6 +268,91 @@ int main() {
 `,
 			tokenEmitter: NewCTokenEmitter(),
 		},
+		{
+			name: "returns C program with while statement",
+			programTree: &domain.ProgramTree{
+				Nodes: []*domain.Node{
+					{
+						Type: domain.LineNode,
+						Children: []*domain.Node{
+							{Type: domain.NumberNode, Token: domain.Token{Type: domain.Number, Value: "10"}},
+							{
+								Type: domain.StatementNode,
+								Children: []*domain.Node{
+									{Token: domain.Token{Type: domain.While}},
+									{
+										Type: domain.ExpressionNode,
+										Children: []*domain.Node{
+											{Token: domain.Token{Type: domain.Identifier, Value: "A"}},
+											{Token: domain.Token{Type: domain.LessThan}},
+											{Token: domain.Token{Type: domain.Number, Value: "5"}},
+										},
+									},
+								},
+							},
+						},
+					},
+					{
+						Type: domain.LineNode,
+						Children: []*domain.Node{
+							{Type: domain.NumberNode, Token: domain.Token{Type: domain.Number, Value: "20"}},
+							{
+								Type: domain.StatementNode,
+								Children: []*domain.Node{
+									{Token: domain.Token{Type: domain.Print}},
+									{
+										Type: domain.ExpressionListNode,
+										Children: []*domain.Node{
+											{Token: domain.Token{Type: domain.String, Value: "\"Hello\""}},
+										},
+									},
+								},
+							},
+						},
+					},
+					{
+						Type: domain.LineNode,
+						Children: []*domain.Node{
+							{Type: domain.NumberNode, Token: domain.Token{Type: domain.Number, Value: "30"}},
+							{
+								Type: domain.StatementNode,
+								Children: []*domain.Node{
+									{Token: domain.Token{Type: domain.Let}},
+									{Token: domain.Token{Type: domain.Identifier, Value: "A"}},
+									{Token: domain.Token{Type: domain.Equal}},
+									{Token: domain.Token{Type: domain.Number, Value: "1"}},
+								},
+							},
+						},
+					},
+					{
+						Type: domain.LineNode,
+						Children: []*domain.Node{
+							{Type: domain.NumberNode, Token: domain.Token{Type: domain.Number, Value: "40"}},
+							{
+								Type: domain.StatementNode,
+								Children: []*domain.Node{
+									{Token: domain.Token{Type: domain.Wend}},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedResult: `#include <stdio.h>
+int main() {
+    label_10:
+    while (A<5) {
+    label_20:
+    printf("%s\n", "Hello");
+    label_30:
+    A = 1;
+    label_40:
+    }
+}
+`,
+			tokenEmitter: NewCTokenEmitter(),
+		},
 	}
 
 	for _, tt := range tests {

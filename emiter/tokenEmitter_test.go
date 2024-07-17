@@ -35,6 +35,8 @@ func TestCTokenEmitter_Emit(t *testing.T) {
 		{domain.Token{Type: domain.Let}, "int"},
 		{domain.Token{Type: domain.If}, "if"},
 		{domain.Token{Type: domain.Goto}, "goto"},
+		{domain.Token{Type: domain.While}, "while"},
+		{domain.Token{Type: domain.Wend}, "}"},
 	}
 
 	for _, test := range tests {
