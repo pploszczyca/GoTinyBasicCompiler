@@ -712,6 +712,67 @@ func TestStatementParser_Parse(t *testing.T) {
 		}
 	})
 
+	t.Run("returns error when if token and expression parser returns error", func(t *testing.T) {
+		expectedError := fmt.Errorf("parse error")
+		fakeExpressionParser := testutils.FakeNodeParser{
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				return nil, expectedError
+			},
+		}
+		tokens := []domain.Token{
+			{Type: domain.While},
+			{Type: domain.Identifier},
+		}
+		iterator := domain.NewTokenIterator(tokens)
+
+		sp := NewStatementParser(
+			&testutils.FakeNodeParser{},
+			&fakeExpressionParser,
+			&testutils.FakeNodeParser{},
+			&testutils.FakeNodeParser{},
+		)
+
+		_, err := sp.Parse(&iterator)
+
+		if !reflect.DeepEqual(err, expectedError) {
+			t.Errorf("Expected error %v, got %v", expectedError, err)
+		}
+	})
+
+	t.Run("returns error when if token and relop parser returns error", func(t *testing.T) {
+		expectedError := fmt.Errorf("parse error")
+		fakeExpressionParser := testutils.FakeNodeParser{
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				iterator.Next()
+				return &domain.Node{Type: domain.ExpressionNode}, nil
+			},
+		}
+		fakeRelopParser := testutils.FakeNodeParser{
+			ParseMock: func(iterator *domain.TokenIterator) (*domain.Node, error) {
+				return nil, expectedError
+			},
+		}
+		tokens := []domain.Token{
+			{Type: domain.While},
+			{Type: domain.Identifier},
+			{Type: domain.LessThan},
+		}
+		iterator := domain.NewTokenIterator(tokens)
+
+		sp := NewStatementParser(
+			&testutils.FakeNodeParser{},
+			fakeExpressionParser,
+			&fakeRelopParser,
+			&testutils.FakeNodeParser{},
+		)
+
+		_, err := sp.Parse(&iterator)
+
+		if !reflect.DeepEqual(err, expectedError) {
+			t.Errorf("Expected error %v, got %v", expectedError, err)
+		}
+	})
+
 	t.Run("parse while statement successfully", func(t *testing.T) {
 		expressionNode := &domain.Node{Type: domain.ExpressionNode}
 		fakeExpressionParser := testutils.FakeNodeParser{
