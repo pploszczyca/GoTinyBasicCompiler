@@ -181,7 +181,7 @@ func parseToKeyword(value string) (domain.Token, error) {
 	case "END":
 		return domain.Token{Type: domain.End}, nil
 	case "WHEN":
-		return domain.Token{Type: domain.When}, nil
+		return domain.Token{Type: domain.While}, nil
 	case "WEND":
 		return domain.Token{Type: domain.Wend}, nil
 	}

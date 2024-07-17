@@ -721,7 +721,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			},
 		}
 		tokens := []domain.Token{
-			{Type: domain.When},
+			{Type: domain.While},
 			{Type: domain.Identifier, Value: "A"},
 		}
 		iterator := domain.NewTokenIterator(tokens)

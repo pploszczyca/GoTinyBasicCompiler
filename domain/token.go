@@ -29,7 +29,7 @@ const (
 	List   TokenType = 110
 	Run    TokenType = 111
 	End    TokenType = 112
-	When   TokenType = 113
+	While  TokenType = 113
 	Wend   TokenType = 114
 
 	// Operators
@@ -69,7 +69,7 @@ var tokenTypeToString = map[TokenType]string{
 	List:               "List",
 	Run:                "Run",
 	End:                "End",
-	When:               "When",
+	While:              "While",
 	Wend:               "Wend",
 	Plus:               "Plus",
 	Minus:              "Minus",

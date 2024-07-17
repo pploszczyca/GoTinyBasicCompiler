@@ -49,7 +49,7 @@ func (s statementParser) Parse(iterator *domain.TokenIterator) (*domain.Node, er
 		parseErr = s.parseLet(token, iterator, &statementNode)
 	case domain.Gosub:
 		parseErr = s.parseGosub(token, iterator, &statementNode)
-	case domain.When:
+	case domain.While:
 		parseErr = s.parseWhen(token, iterator, &statementNode)
 	case domain.Return, domain.Clear, domain.List, domain.Run, domain.End, domain.Wend:
 		statementNode.AddChildToken(token)
