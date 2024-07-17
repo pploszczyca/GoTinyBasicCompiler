@@ -234,7 +234,7 @@ func (c *cEmitter) emitStatementNode(
 		}
 
 		builder.WriteString(stringToken + " (")
-		err = c.emitNode(builder, node.Children[1], previousIdentifiers, indent)
+		err = c.emitMultipleNodes(builder, node.Children[1:], previousIdentifiers, indent)
 		if err != nil {
 			return err
 		}

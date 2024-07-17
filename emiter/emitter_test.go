@@ -284,7 +284,17 @@ int main() {
 										Type: domain.ExpressionNode,
 										Children: []*domain.Node{
 											{Token: domain.Token{Type: domain.Identifier, Value: "A"}},
+										},
+									},
+									{
+										Type: domain.RelopNode,
+										Children: []*domain.Node{
 											{Token: domain.Token{Type: domain.LessThan}},
+										},
+									},
+									{
+										Type: domain.ExpressionNode,
+										Children: []*domain.Node{
 											{Token: domain.Token{Type: domain.Number, Value: "5"}},
 										},
 									},
