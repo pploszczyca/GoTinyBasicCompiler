@@ -135,78 +135,78 @@ func readAnotherToken(line string, currentIndex int) (domain.Token, int, error) 
 }
 
 func lexAnother(result string, currentIndex int) (domain.Token, int, error) {
-	keywordToken, err := parseToKeyword(result)
-	if err != nil {
-		operatorToken, err := parseToOperator(result)
-		if err != nil {
-			delimeterOperator, err := parseToDelimiter(result)
-			if err != nil {
-				identifierToken, err := parseIdentifier(result)
-				if err != nil {
-					return domain.Token{}, currentIndex, err
-				}
-				return identifierToken, currentIndex, nil
-			}
-			return delimeterOperator, currentIndex, nil
-		}
-		return operatorToken, currentIndex, nil
+	if token, err := parseToKeyword(result); err == nil {
+		return token, currentIndex, nil
 	}
-	return keywordToken, currentIndex, nil
+	if token, err := parseToOperator(result); err == nil {
+		return token, currentIndex, nil
+	}
+	if token, err := parseToDelimiter(result); err == nil {
+		return token, currentIndex, nil
+	}
+
+	token, err := parseIdentifier(result)
+
+	return token, currentIndex, err
 }
 
 func parseToKeyword(value string) (domain.Token, error) {
-	tokenType, ok := map[string]domain.TokenType{
-		"PRINT": domain.Print, "IF": domain.If, "THEN": domain.Then, "GOTO": domain.Goto,
-		"INPUT": domain.Input, "LET": domain.Let, "GOSUB": domain.Gosub, "RETURN": domain.Return,
-		"CLEAR": domain.Clear, "LIST": domain.List, "RUN": domain.Run, "END": domain.End,
-		"WHILE": domain.While, "WEND": domain.Wend, "FOR": domain.For, "TO": domain.To, "NEXT": domain.Next,
-	}[value]
-
-	if !ok {
-		return domain.Token{}, fmt.Errorf("invalid keyword")
+	keywords := map[string]domain.TokenType{
+		"PRINT":  domain.Print,
+		"IF":     domain.If,
+		"THEN":   domain.Then,
+		"GOTO":   domain.Goto,
+		"INPUT":  domain.Input,
+		"LET":    domain.Let,
+		"GOSUB":  domain.Gosub,
+		"RETURN": domain.Return,
+		"CLEAR":  domain.Clear,
+		"LIST":   domain.List,
+		"RUN":    domain.Run,
+		"END":    domain.End,
+		"WHILE":  domain.While,
+		"WEND":   domain.Wend,
+		"FOR":    domain.For,
+		"TO":     domain.To,
+		"NEXT":   domain.Next,
 	}
-	return domain.Token{Type: tokenType}, nil
+
+	if tokenType, ok := keywords[value]; ok {
+		return domain.Token{Type: tokenType}, nil
+	}
+
+	return domain.Token{}, fmt.Errorf("invalid keyword")
 }
 
 func parseToOperator(value string) (domain.Token, error) {
-	switch value {
-	case "+":
-		return domain.Token{Type: domain.Plus}, nil
-	case "-":
-		return domain.Token{Type: domain.Minus}, nil
-	case "*":
-		return domain.Token{Type: domain.Multiply}, nil
-	case "/":
-		return domain.Token{Type: domain.Divide}, nil
-	case "=":
-		return domain.Token{Type: domain.Equal}, nil
-	case "<":
-		return domain.Token{Type: domain.LessThan}, nil
-	case ">":
-		return domain.Token{Type: domain.GreaterThan}, nil
-	case "<=":
-		return domain.Token{Type: domain.LessThanOrEqual}, nil
-	case ">=":
-		return domain.Token{Type: domain.GreaterThanOrEqual}, nil
-	case "<>":
-		return domain.Token{Type: domain.NotEqual}, nil
+	operators := map[string]domain.TokenType{
+		"+":  domain.Plus,
+		"-":  domain.Minus,
+		"*":  domain.Multiply,
+		"/":  domain.Divide,
+		"=":  domain.Equal,
+		"<":  domain.LessThan,
+		">":  domain.GreaterThan,
+		"<=": domain.LessThanOrEqual,
+		">=": domain.GreaterThanOrEqual,
+		"<>": domain.NotEqual,
 	}
-
+	if tokenType, ok := operators[value]; ok {
+		return domain.Token{Type: tokenType}, nil
+	}
 	return domain.Token{}, fmt.Errorf("invalid operator")
 }
 
 func parseToDelimiter(value string) (domain.Token, error) {
-	switch value {
-	case ",":
-		return domain.Token{Type: domain.Comma}, nil
-	case ";":
-		return domain.Token{Type: domain.Semicolon}, nil
-	case "(":
-		return domain.Token{Type: domain.LParen}, nil
-	case ")":
-		return domain.Token{Type: domain.RParen}, nil
+	delimiters := map[string]domain.TokenType{
+		",": domain.Comma,
+		";": domain.Semicolon,
+		"(": domain.LParen,
+		")": domain.RParen,
 	}
-
+	if tokenType, ok := delimiters[value]; ok {
+		return domain.Token{Type: tokenType}, nil
+	}
 	return domain.Token{}, fmt.Errorf("invalid delimiter")
 }
 
