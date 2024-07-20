@@ -75,12 +75,8 @@ func (s statementParser) parsePrint(
 ) error {
 	statementNode.AddChildToken(token)
 	iterator.Next()
-	expressionListNode, err := s.expressionListParser.Parse(iterator)
-	if err != nil {
-		return err
-	}
-	statementNode.AddChild(expressionListNode)
-	return nil
+
+	return s.parseAndAddNode(iterator, statementNode, s.expressionListParser)
 }
 
 func (s statementParser) parseIf(
@@ -91,23 +87,17 @@ func (s statementParser) parseIf(
 	statementNode.AddChildToken(token)
 	iterator.Next()
 
-	expressionNode, err := s.expressionParser.Parse(iterator)
-	if err != nil {
+	if err := s.parseAndAddNode(iterator, statementNode, s.expressionParser); err != nil {
 		return err
 	}
-	statementNode.AddChild(expressionNode)
 
-	relopNode, err := s.relopParser.Parse(iterator)
-	if err != nil {
+	if err := s.parseAndAddNode(iterator, statementNode, s.relopParser); err != nil {
 		return err
 	}
-	statementNode.AddChild(relopNode)
 
-	expressionNode, err = s.expressionParser.Parse(iterator)
-	if err != nil {
+	if err := s.parseAndAddNode(iterator, statementNode, s.expressionParser); err != nil {
 		return err
 	}
-	statementNode.AddChild(expressionNode)
 
 	if err := s.expectAndAddMatchingToken(iterator, statementNode, domain.Then); err != nil {
 		return err
@@ -130,13 +120,7 @@ func (s statementParser) parseGoto(
 	statementNode.AddChildToken(token)
 	iterator.Next()
 
-	expressionNode, err := s.expressionParser.Parse(iterator)
-	if err != nil {
-		return err
-	}
-	statementNode.AddChild(expressionNode)
-
-	return nil
+	return s.parseAndAddNode(iterator, statementNode, s.expressionParser)
 }
 
 func (s statementParser) parseInput(
@@ -147,13 +131,7 @@ func (s statementParser) parseInput(
 	statementNode.AddChildToken(token)
 	iterator.Next()
 
-	varListNode, err := s.varListParser.Parse(iterator)
-	if err != nil {
-		return err
-	}
-	statementNode.AddChild(varListNode)
-
-	return nil
+	return s.parseAndAddNode(iterator, statementNode, s.varListParser)
 }
 
 func (s statementParser) parseLet(
@@ -172,13 +150,7 @@ func (s statementParser) parseLet(
 		return err
 	}
 
-	expressionNode, err := s.expressionParser.Parse(iterator)
-	if err != nil {
-		return err
-	}
-	statementNode.AddChild(expressionNode)
-
-	return nil
+	return s.parseAndAddNode(iterator, statementNode, s.expressionParser)
 }
 
 func (s statementParser) parseGosub(
@@ -189,13 +161,7 @@ func (s statementParser) parseGosub(
 	statementNode.AddChildToken(token)
 	iterator.Next()
 
-	expressionNode, err := s.expressionParser.Parse(iterator)
-	if err != nil {
-		return err
-	}
-	statementNode.AddChild(expressionNode)
-
-	return nil
+	return s.parseAndAddNode(iterator, statementNode, s.expressionParser)
 }
 
 func (s statementParser) parseWhile(
@@ -206,25 +172,15 @@ func (s statementParser) parseWhile(
 	statementNode.AddChildToken(token)
 	iterator.Next()
 
-	expressionNode, err := s.expressionParser.Parse(iterator)
-	if err != nil {
+	if err := s.parseAndAddNode(iterator, statementNode, s.expressionParser); err != nil {
 		return err
 	}
-	statementNode.AddChild(expressionNode)
 
-	relopNode, err := s.relopParser.Parse(iterator)
-	if err != nil {
+	if err := s.parseAndAddNode(iterator, statementNode, s.relopParser); err != nil {
 		return err
 	}
-	statementNode.AddChild(relopNode)
 
-	expressionNode, err = s.expressionParser.Parse(iterator)
-	if err != nil {
-		return err
-	}
-	statementNode.AddChild(expressionNode)
-
-	return nil
+	return s.parseAndAddNode(iterator, statementNode, s.expressionParser)
 }
 
 func (s statementParser) parseFor(
@@ -243,23 +199,15 @@ func (s statementParser) parseFor(
 		return err
 	}
 
-	expressionNode, err := s.expressionParser.Parse(iterator)
-	if err != nil {
+	if err := s.parseAndAddNode(iterator, statementNode, s.expressionParser); err != nil {
 		return err
 	}
-	statementNode.AddChild(expressionNode)
 
 	if err := s.expectAndAddMatchingToken(iterator, statementNode, domain.To); err != nil {
 		return err
 	}
 
-	expressionNode, err = s.expressionParser.Parse(iterator)
-	if err != nil {
-		return err
-	}
-	statementNode.AddChild(expressionNode)
-
-	return nil
+	return s.parseAndAddNode(iterator, statementNode, s.expressionParser)
 }
 
 func (s statementParser) parseNext(
@@ -288,5 +236,18 @@ func (s statementParser) expectAndAddMatchingToken(
 	statementNode.AddChildToken(token)
 	iterator.Next()
 
+	return nil
+}
+
+func (s statementParser) parseAndAddNode(
+	iterator *domain.TokenIterator,
+	statementNode *domain.Node,
+	parser parser.NodeParser,
+) error {
+	node, err := parser.Parse(iterator)
+	if err != nil {
+		return err
+	}
+	statementNode.AddChild(node)
 	return nil
 }
