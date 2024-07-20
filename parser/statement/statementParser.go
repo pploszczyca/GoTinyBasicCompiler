@@ -3,6 +3,7 @@ package statement
 import (
 	"GoTinyBasicCompiler/domain"
 	"GoTinyBasicCompiler/parser"
+	"GoTinyBasicCompiler/parser/internal"
 	"fmt"
 )
 
@@ -76,7 +77,7 @@ func (s statementParser) parsePrint(
 	statementNode.AddChildToken(token)
 	iterator.Next()
 
-	return s.parseAndAddNode(iterator, statementNode, s.expressionListParser)
+	return internal.ParseAndAddNode(iterator, statementNode, s.expressionListParser)
 }
 
 func (s statementParser) parseIf(
@@ -87,19 +88,12 @@ func (s statementParser) parseIf(
 	statementNode.AddChildToken(token)
 	iterator.Next()
 
-	if err := s.parseAndAddNode(iterator, statementNode, s.expressionParser); err != nil {
-		return err
-	}
-
-	if err := s.parseAndAddNode(iterator, statementNode, s.relopParser); err != nil {
-		return err
-	}
-
-	if err := s.parseAndAddNode(iterator, statementNode, s.expressionParser); err != nil {
-		return err
-	}
-
-	if err := s.expectAndAddMatchingToken(iterator, statementNode, domain.Then); err != nil {
+	if err := internal.ParseSteps([]internal.StepFunc{
+		func() error { return internal.ParseAndAddNode(iterator, statementNode, s.expressionParser) },
+		func() error { return internal.ParseAndAddNode(iterator, statementNode, s.relopParser) },
+		func() error { return internal.ParseAndAddNode(iterator, statementNode, s.expressionParser) },
+		func() error { return internal.ExpectAndAddMatchingToken(iterator, statementNode, domain.Then) },
+	}); err != nil {
 		return err
 	}
 
@@ -120,7 +114,7 @@ func (s statementParser) parseGoto(
 	statementNode.AddChildToken(token)
 	iterator.Next()
 
-	return s.parseAndAddNode(iterator, statementNode, s.expressionParser)
+	return internal.ParseAndAddNode(iterator, statementNode, s.expressionParser)
 }
 
 func (s statementParser) parseInput(
@@ -131,7 +125,7 @@ func (s statementParser) parseInput(
 	statementNode.AddChildToken(token)
 	iterator.Next()
 
-	return s.parseAndAddNode(iterator, statementNode, s.varListParser)
+	return internal.ParseAndAddNode(iterator, statementNode, s.varListParser)
 }
 
 func (s statementParser) parseLet(
@@ -142,15 +136,11 @@ func (s statementParser) parseLet(
 	statementNode.AddChildToken(token)
 	iterator.Next()
 
-	if err := s.expectAndAddMatchingToken(iterator, statementNode, domain.Identifier); err != nil {
-		return err
-	}
-
-	if err := s.expectAndAddMatchingToken(iterator, statementNode, domain.Equal); err != nil {
-		return err
-	}
-
-	return s.parseAndAddNode(iterator, statementNode, s.expressionParser)
+	return internal.ParseSteps([]internal.StepFunc{
+		func() error { return internal.ExpectAndAddMatchingToken(iterator, statementNode, domain.Identifier) },
+		func() error { return internal.ExpectAndAddMatchingToken(iterator, statementNode, domain.Equal) },
+		func() error { return internal.ParseAndAddNode(iterator, statementNode, s.expressionParser) },
+	})
 }
 
 func (s statementParser) parseGosub(
@@ -161,7 +151,7 @@ func (s statementParser) parseGosub(
 	statementNode.AddChildToken(token)
 	iterator.Next()
 
-	return s.parseAndAddNode(iterator, statementNode, s.expressionParser)
+	return internal.ParseAndAddNode(iterator, statementNode, s.expressionParser)
 }
 
 func (s statementParser) parseWhile(
@@ -172,15 +162,11 @@ func (s statementParser) parseWhile(
 	statementNode.AddChildToken(token)
 	iterator.Next()
 
-	if err := s.parseAndAddNode(iterator, statementNode, s.expressionParser); err != nil {
-		return err
-	}
-
-	if err := s.parseAndAddNode(iterator, statementNode, s.relopParser); err != nil {
-		return err
-	}
-
-	return s.parseAndAddNode(iterator, statementNode, s.expressionParser)
+	return internal.ParseSteps([]internal.StepFunc{
+		func() error { return internal.ParseAndAddNode(iterator, statementNode, s.expressionParser) },
+		func() error { return internal.ParseAndAddNode(iterator, statementNode, s.relopParser) },
+		func() error { return internal.ParseAndAddNode(iterator, statementNode, s.expressionParser) },
+	})
 }
 
 func (s statementParser) parseFor(
@@ -191,23 +177,13 @@ func (s statementParser) parseFor(
 	statementNode.AddChildToken(token)
 	iterator.Next()
 
-	if err := s.expectAndAddMatchingToken(iterator, statementNode, domain.Identifier); err != nil {
-		return err
-	}
-
-	if err := s.expectAndAddMatchingToken(iterator, statementNode, domain.Equal); err != nil {
-		return err
-	}
-
-	if err := s.parseAndAddNode(iterator, statementNode, s.expressionParser); err != nil {
-		return err
-	}
-
-	if err := s.expectAndAddMatchingToken(iterator, statementNode, domain.To); err != nil {
-		return err
-	}
-
-	return s.parseAndAddNode(iterator, statementNode, s.expressionParser)
+	return internal.ParseSteps([]internal.StepFunc{
+		func() error { return internal.ExpectAndAddMatchingToken(iterator, statementNode, domain.Identifier) },
+		func() error { return internal.ExpectAndAddMatchingToken(iterator, statementNode, domain.Equal) },
+		func() error { return internal.ParseAndAddNode(iterator, statementNode, s.expressionParser) },
+		func() error { return internal.ExpectAndAddMatchingToken(iterator, statementNode, domain.To) },
+		func() error { return internal.ParseAndAddNode(iterator, statementNode, s.expressionParser) },
+	})
 }
 
 func (s statementParser) parseNext(
@@ -218,36 +194,5 @@ func (s statementParser) parseNext(
 	statementNode.AddChildToken(token)
 	iterator.Next()
 
-	return s.expectAndAddMatchingToken(iterator, statementNode, domain.Identifier)
-}
-
-func (s statementParser) expectAndAddMatchingToken(
-	iterator *domain.TokenIterator,
-	statementNode *domain.Node,
-	expectedTokenType domain.TokenType,
-) error {
-	token, err := iterator.Current()
-	if err != nil {
-		return err
-	}
-	if token.Type != expectedTokenType {
-		return fmt.Errorf("expected %s", expectedTokenType)
-	}
-	statementNode.AddChildToken(token)
-	iterator.Next()
-
-	return nil
-}
-
-func (s statementParser) parseAndAddNode(
-	iterator *domain.TokenIterator,
-	statementNode *domain.Node,
-	parser parser.NodeParser,
-) error {
-	node, err := parser.Parse(iterator)
-	if err != nil {
-		return err
-	}
-	statementNode.AddChild(node)
-	return nil
+	return internal.ExpectAndAddMatchingToken(iterator, statementNode, domain.Identifier)
 }
