@@ -256,7 +256,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			{Type: domain.Cr},
 		}
 		iterator := domain.NewTokenIterator(tokens)
-		expectedError := fmt.Errorf("expected THEN")
+		expectedError := fmt.Errorf("expected Then")
 
 		sp := NewStatementParser(
 			&testutils.FakeNodeParser{},
@@ -602,7 +602,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			{Type: domain.Identifier},
 		}
 		iterator := domain.NewTokenIterator(tokens)
-		expectedError := fmt.Errorf("expected equal")
+		expectedError := fmt.Errorf("expected Equal")
 
 		sp := NewStatementParser(
 			&testutils.FakeNodeParser{},
@@ -631,7 +631,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			{Type: domain.Identifier},
 		}
 		iterator := domain.NewTokenIterator(tokens)
-		expectedError := fmt.Errorf("expected identifier")
+		expectedError := fmt.Errorf("expected Identifier")
 
 		sp := NewStatementParser(
 			&testutils.FakeNodeParser{},
@@ -848,7 +848,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			{Type: domain.Number},
 		}
 		iterator := domain.NewTokenIterator(tokens)
-		expectedError := fmt.Errorf("expected identifier")
+		expectedError := fmt.Errorf("expected Identifier")
 
 		sp := NewStatementParser(
 			&testutils.FakeNodeParser{},
@@ -893,7 +893,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			{Type: domain.Number},
 		}
 		iterator := domain.NewTokenIterator(tokens)
-		expectedError := fmt.Errorf("expected equal")
+		expectedError := fmt.Errorf("expected Equal")
 
 		sp := NewStatementParser(
 			&testutils.FakeNodeParser{},
@@ -985,7 +985,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			{Type: domain.Number},
 		}
 		iterator := domain.NewTokenIterator(tokens)
-		expectedError := fmt.Errorf("expected TO statement")
+		expectedError := fmt.Errorf("expected To")
 
 		sp := NewStatementParser(
 			&testutils.FakeNodeParser{},
@@ -1112,7 +1112,7 @@ func TestStatementParser_Parse(t *testing.T) {
 			{Type: domain.Number},
 		}
 		iterator := domain.NewTokenIterator(tokens)
-		expectedError := fmt.Errorf("expected identifier")
+		expectedError := fmt.Errorf("expected Identifier")
 
 		sp := NewStatementParser(
 			&testutils.FakeNodeParser{},
