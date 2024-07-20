@@ -94,7 +94,7 @@ func TestFactorParser_Parse(t *testing.T) {
 			},
 		}
 		iterator := domain.NewTokenIterator([]domain.Token{{Type: domain.LParen}, {Type: domain.Identifier}, {Type: domain.Number}})
-		expectedError := "expected right parenthesis"
+		expectedError := "expected RParen"
 
 		fp := NewFactorParser(fakeExpressionParser)
 		_, err := fp.Parse(&iterator)

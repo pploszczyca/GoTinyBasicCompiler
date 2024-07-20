@@ -21,7 +21,7 @@ func TestVarListParser_Parse(t *testing.T) {
 
 	t.Run("returns error when token is not an identifier", func(t *testing.T) {
 		iterator := domain.NewTokenIterator([]domain.Token{{Type: domain.Number}})
-		expectedError := "expected identifier"
+		expectedError := "expected Identifier"
 
 		vp := NewVarListParser()
 		_, err := vp.Parse(&iterator)

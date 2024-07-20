@@ -3,6 +3,7 @@ package line
 import (
 	"GoTinyBasicCompiler/domain"
 	"GoTinyBasicCompiler/parser"
+	"GoTinyBasicCompiler/parser/internal"
 	"fmt"
 )
 
@@ -31,12 +32,9 @@ func (l lineParser) Parse(iterator *domain.TokenIterator) (*domain.Node, error) 
 		iterator.Next()
 	}
 
-	statementNode, err := l.statementParser.Parse(iterator)
-	if err != nil {
+	if err := internal.ParseAndAddNode(iterator, &lineNode, l.statementParser); err != nil {
 		return nil, err
 	}
-
-	lineNode.AddChild(statementNode)
 
 	token, err = iterator.Current()
 	if err != nil {

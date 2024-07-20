@@ -3,6 +3,7 @@ package factor
 import (
 	"GoTinyBasicCompiler/domain"
 	"GoTinyBasicCompiler/parser"
+	"GoTinyBasicCompiler/parser/internal"
 	"fmt"
 )
 
@@ -32,23 +33,13 @@ func (f factorParser) Parse(iterator *domain.TokenIterator) (*domain.Node, error
 	} else if token.Type == domain.LParen {
 		factorNode.AddChildToken(token)
 		iterator.Next()
-		expressionNode, err := f.expressionParser.Parse(iterator)
-		if err != nil {
+
+		if err := internal.ParseSteps([]internal.StepFunc{
+			func() error { return internal.ParseAndAddNode(iterator, factorNode, f.expressionParser) },
+			func() error { return internal.ExpectAndAddMatchingToken(iterator, factorNode, domain.RParen) },
+		}); err != nil {
 			return nil, err
 		}
-		factorNode.AddChild(expressionNode)
-
-		token, err = iterator.Current()
-		if err != nil {
-			return nil, err
-		}
-
-		if token.Type != domain.RParen {
-			return nil, fmt.Errorf("expected right parenthesis")
-		}
-
-		factorNode.AddChildToken(token)
-		iterator.Next()
 	} else {
 		return nil, fmt.Errorf("expected number, identifier or left parenthesis")
 	}

@@ -3,7 +3,7 @@ package varList
 import (
 	"GoTinyBasicCompiler/domain"
 	"GoTinyBasicCompiler/parser"
-	"fmt"
+	"GoTinyBasicCompiler/parser/internal"
 )
 
 type varListParser struct {
@@ -17,15 +17,9 @@ func (v varListParser) Parse(iterator *domain.TokenIterator) (*domain.Node, erro
 	varListNode := domain.Node{Type: domain.VarListNode}
 
 	for {
-		token, err := iterator.Current()
-		if err != nil {
+		if err := internal.ExpectAndAddMatchingToken(iterator, &varListNode, domain.Identifier); err != nil {
 			return nil, err
 		}
-		if token.Type != domain.Identifier {
-			return nil, fmt.Errorf("expected identifier")
-		}
-		varListNode.AddChildToken(token)
-		iterator.Next()
 
 		commaToken, err := iterator.Current()
 		if err != nil {

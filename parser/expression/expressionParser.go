@@ -3,6 +3,7 @@ package expression
 import (
 	"GoTinyBasicCompiler/domain"
 	"GoTinyBasicCompiler/parser"
+	"GoTinyBasicCompiler/parser/internal"
 )
 
 type expressionParser struct {
@@ -31,11 +32,9 @@ func (e expressionParser) Parse(iterator *domain.TokenIterator) (*domain.Node, e
 			iterator.Next()
 		}
 
-		termNode, err := e.termParser.Parse(iterator)
-		if err != nil {
+		if err := internal.ParseAndAddNode(iterator, expressionNode, e.termParser); err != nil {
 			return nil, err
 		}
-		expressionNode.AddChild(termNode)
 
 		token, err = iterator.Current()
 		if err != nil {

@@ -3,6 +3,7 @@ package term
 import (
 	"GoTinyBasicCompiler/domain"
 	"GoTinyBasicCompiler/parser"
+	"GoTinyBasicCompiler/parser/internal"
 )
 
 type termParser struct {
@@ -21,11 +22,9 @@ func (t termParser) Parse(iterator *domain.TokenIterator) (*domain.Node, error) 
 	termNode := &domain.Node{Type: domain.TermNode}
 
 	for {
-		factorNode, err := t.factorParser.Parse(iterator)
-		if err != nil {
+		if err := internal.ParseAndAddNode(iterator, termNode, t.factorParser); err != nil {
 			return nil, err
 		}
-		termNode.AddChild(factorNode)
 
 		token, err := iterator.Current()
 		if err != nil {
