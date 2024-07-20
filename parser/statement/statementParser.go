@@ -51,7 +51,11 @@ func (s statementParser) Parse(iterator *domain.TokenIterator) (*domain.Node, er
 		parseErr = s.parseGosub(token, iterator, &statementNode)
 	case domain.While:
 		parseErr = s.parseWhile(token, iterator, &statementNode)
-	case domain.Return, domain.Clear, domain.List, domain.Run, domain.End, domain.Wend:
+	case domain.For:
+		parseErr = s.parseFor(token, iterator, &statementNode)
+	case domain.Next:
+		parseErr = s.parseNext(token, iterator, &statementNode)
+	case domain.Return, domain.Clear, domain.List, domain.Run, domain.End, domain.Wend, domain.To:
 		statementNode.AddChildToken(token)
 		iterator.Next()
 	default:
@@ -237,6 +241,80 @@ func (s statementParser) parseWhile(
 		return err
 	}
 	statementNode.AddChild(expressionNode)
+
+	return nil
+}
+
+func (s statementParser) parseFor(
+	token domain.Token,
+	iterator *domain.TokenIterator,
+	statementNode *domain.Node,
+) error {
+	statementNode.AddChildToken(token)
+	iterator.Next()
+
+	token, err := iterator.Current()
+	if err != nil {
+		return err
+	}
+	if token.Type != domain.Identifier {
+		return fmt.Errorf("expected identifier")
+	}
+	statementNode.AddChildToken(token)
+	iterator.Next()
+
+	token, err = iterator.Current()
+	if err != nil {
+		return err
+	}
+	if token.Type != domain.Equal {
+		return fmt.Errorf("expected equal")
+	}
+	statementNode.AddChildToken(token)
+	iterator.Next()
+
+	expressionNode, err := s.expressionParser.Parse(iterator)
+	if err != nil {
+		return err
+	}
+	statementNode.AddChild(expressionNode)
+
+	token, err = iterator.Current()
+	if err != nil {
+		return err
+	}
+	if token.Type != domain.To {
+		return fmt.Errorf("expected TO statement")
+	}
+	statementNode.AddChildToken(token)
+	iterator.Next()
+
+	expressionNode, err = s.expressionParser.Parse(iterator)
+	if err != nil {
+		return err
+	}
+	statementNode.AddChild(expressionNode)
+
+	return nil
+}
+
+func (s statementParser) parseNext(
+	token domain.Token,
+	iterator *domain.TokenIterator,
+	statementNode *domain.Node,
+) error {
+	statementNode.AddChildToken(token)
+	iterator.Next()
+
+	token, err := iterator.Current()
+	if err != nil {
+		return err
+	}
+	if token.Type != domain.Identifier {
+		return fmt.Errorf("expected identifier")
+	}
+	statementNode.AddChildToken(token)
+	iterator.Next()
 
 	return nil
 }
