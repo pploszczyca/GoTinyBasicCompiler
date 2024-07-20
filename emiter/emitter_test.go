@@ -363,6 +363,72 @@ int main() {
 `,
 			tokenEmitter: NewCTokenEmitter(),
 		},
+		{
+			name: "returns C program with for statement",
+			programTree: &domain.ProgramTree{
+				Nodes: []*domain.Node{
+					{
+						Type: domain.LineNode,
+						Children: []*domain.Node{
+							{Type: domain.NumberNode, Token: domain.Token{Type: domain.Number, Value: "10"}},
+							{
+								Type: domain.StatementNode,
+								Children: []*domain.Node{
+									{Token: domain.Token{Type: domain.For}},
+									{Token: domain.Token{Type: domain.Identifier, Value: "I"}},
+									{Token: domain.Token{Type: domain.Equal}},
+									{Type: domain.ExpressionNode, Children: []*domain.Node{{Token: domain.Token{Type: domain.Number, Value: "1"}}}},
+									{Token: domain.Token{Type: domain.To}},
+									{Type: domain.ExpressionNode, Children: []*domain.Node{{Token: domain.Token{Type: domain.Number, Value: "5"}}}},
+								},
+							},
+						},
+					},
+					{
+						Type: domain.LineNode,
+						Children: []*domain.Node{
+							{Type: domain.NumberNode, Token: domain.Token{Type: domain.Number, Value: "20"}},
+							{
+								Type: domain.StatementNode,
+								Children: []*domain.Node{
+									{Token: domain.Token{Type: domain.Print}},
+									{
+										Type: domain.ExpressionListNode,
+										Children: []*domain.Node{
+											{Token: domain.Token{Type: domain.String, Value: "\"Hello\""}},
+										},
+									},
+								},
+							},
+						},
+					},
+					{
+						Type: domain.LineNode,
+						Children: []*domain.Node{
+							{Type: domain.NumberNode, Token: domain.Token{Type: domain.Number, Value: "30"}},
+							{
+								Type: domain.StatementNode,
+								Children: []*domain.Node{
+									{Token: domain.Token{Type: domain.Next}},
+									{Token: domain.Token{Type: domain.Identifier, Value: "I"}},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedResult: `#include <stdio.h>
+int main() {
+    label_10:
+    for (int I = 1; I <= 5; I++) {
+    label_20:
+    printf("%s\n", "Hello");
+    label_30:
+    }
+}
+`,
+			tokenEmitter: NewCTokenEmitter(),
+		},
 	}
 
 	for _, tt := range tests {

@@ -241,6 +241,49 @@ func (c *cEmitter) emitStatementNode(
 
 		builder.WriteString(") {")
 
+	case domain.For:
+		forToken, err := c.tokenEmitter.Emit(node.Children[0].Token)
+		if err != nil {
+			return err
+		}
+
+		identifierString, err := c.tokenEmitter.Emit(node.Children[1].Token)
+		if err != nil {
+			return err
+		}
+
+		equalString, err := c.tokenEmitter.Emit(node.Children[2].Token)
+		if err != nil {
+			return err
+		}
+
+		var fromStringBuilder strings.Builder
+		if err := c.emitNode(&fromStringBuilder, node.Children[3], previousIdentifiers, indent); err != nil {
+			return err
+		}
+
+		_, err = c.tokenEmitter.Emit(node.Children[4].Token)
+		if err != nil {
+			return err
+		}
+
+		var toStringBuilder strings.Builder
+		if err := c.emitNode(&toStringBuilder, node.Children[5], previousIdentifiers, indent); err != nil {
+			return err
+		}
+
+		fromExpression := fromStringBuilder.String()
+		toExpression := toStringBuilder.String()
+
+		builder.WriteString(forToken + " (int " + identifierString + " " + equalString + " " + fromExpression + "; " + identifierString + " <= " + toExpression + "; " + identifierString + "++) {")
+
+	case domain.Next:
+		stringToken, err := c.tokenEmitter.Emit(node.Children[0].Token)
+		if err != nil {
+			return err
+		}
+		builder.WriteString(stringToken)
+
 	default:
 		return c.emitMultipleNodes(builder, node.Children, previousIdentifiers, indent)
 	}
@@ -266,7 +309,7 @@ func (c *cEmitter) emitMultipleNodes(
 func (c *cEmitter) shouldWriteEndLine(node *domain.Node) bool {
 	if node.IsLeaf() {
 		tokenType := node.Token.Type
-		return tokenType != domain.While && tokenType != domain.Wend
+		return tokenType != domain.While && tokenType != domain.Wend && tokenType != domain.Next && tokenType != domain.For
 	}
 
 	for _, child := range node.Children {
