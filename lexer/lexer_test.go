@@ -151,6 +151,18 @@ func TestLexer(t *testing.T) {
 			expectedToken: domain.Token{Type: domain.Wend},
 		},
 		{
+			inputCode:     "FOR",
+			expectedToken: domain.Token{Type: domain.For},
+		},
+		{
+			inputCode:     "TO",
+			expectedToken: domain.Token{Type: domain.To},
+		},
+		{
+			inputCode:     "NEXT",
+			expectedToken: domain.Token{Type: domain.Next},
+		},
+		{
 			inputCode:     "+",
 			expectedToken: domain.Token{Type: domain.Plus},
 		},

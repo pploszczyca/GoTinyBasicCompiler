@@ -31,6 +31,9 @@ const (
 	End    TokenType = 112
 	While  TokenType = 113
 	Wend   TokenType = 114
+	For    TokenType = 115
+	To     TokenType = 116
+	Next   TokenType = 117
 
 	// Operators
 	Plus               TokenType = 201
@@ -71,6 +74,9 @@ var tokenTypeToString = map[TokenType]string{
 	End:                "End",
 	While:              "While",
 	Wend:               "Wend",
+	For:                "For",
+	To:                 "To",
+	Next:               "Next",
 	Plus:               "Plus",
 	Minus:              "Minus",
 	Multiply:           "Multiply",

@@ -155,38 +155,17 @@ func lexAnother(result string, currentIndex int) (domain.Token, int, error) {
 }
 
 func parseToKeyword(value string) (domain.Token, error) {
-	switch value {
-	case "PRINT":
-		return domain.Token{Type: domain.Print}, nil
-	case "IF":
-		return domain.Token{Type: domain.If}, nil
-	case "THEN":
-		return domain.Token{Type: domain.Then}, nil
-	case "GOTO":
-		return domain.Token{Type: domain.Goto}, nil
-	case "INPUT":
-		return domain.Token{Type: domain.Input}, nil
-	case "LET":
-		return domain.Token{Type: domain.Let}, nil
-	case "GOSUB":
-		return domain.Token{Type: domain.Gosub}, nil
-	case "RETURN":
-		return domain.Token{Type: domain.Return}, nil
-	case "CLEAR":
-		return domain.Token{Type: domain.Clear}, nil
-	case "LIST":
-		return domain.Token{Type: domain.List}, nil
-	case "RUN":
-		return domain.Token{Type: domain.Run}, nil
-	case "END":
-		return domain.Token{Type: domain.End}, nil
-	case "WHILE":
-		return domain.Token{Type: domain.While}, nil
-	case "WEND":
-		return domain.Token{Type: domain.Wend}, nil
-	}
+	tokenType, ok := map[string]domain.TokenType{
+		"PRINT": domain.Print, "IF": domain.If, "THEN": domain.Then, "GOTO": domain.Goto,
+		"INPUT": domain.Input, "LET": domain.Let, "GOSUB": domain.Gosub, "RETURN": domain.Return,
+		"CLEAR": domain.Clear, "LIST": domain.List, "RUN": domain.Run, "END": domain.End,
+		"WHILE": domain.While, "WEND": domain.Wend, "FOR": domain.For, "TO": domain.To, "NEXT": domain.Next,
+	}[value]
 
-	return domain.Token{}, fmt.Errorf("invalid keyword")
+	if !ok {
+		return domain.Token{}, fmt.Errorf("invalid keyword")
+	}
+	return domain.Token{Type: tokenType}, nil
 }
 
 func parseToOperator(value string) (domain.Token, error) {
