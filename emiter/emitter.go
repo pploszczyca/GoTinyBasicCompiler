@@ -26,7 +26,26 @@ func (c *cEmitter) Emit(programTree *domain.ProgramTree) (string, error) {
 	var builder strings.Builder
 	previousIdentifiers := utils.NewSet[domain.Token]()
 
-	builder.WriteString("#include <stdio.h>\nint main() {\n")
+	builder.WriteString(`#include <stdio.h>
+
+typedef struct {
+    int lineNumber;
+    void *labelAddr;
+} LabelMap;
+
+void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
+    for (int i = 0; i < numLabels; ++i) {
+        if (labels[i].lineNumber == lineNumber) {
+            return labels[i].labelAddr;
+        }
+    }
+    return &&default_label_addr;
+}
+
+int main() {
+`)
+
+	c.emitLabelsMap(&builder, programTree.Nodes, 1)
 
 	err := c.emitMultipleNodes(&builder, programTree.Nodes, previousIdentifiers, 1)
 	if err != nil {
@@ -36,6 +55,43 @@ func (c *cEmitter) Emit(programTree *domain.ProgramTree) (string, error) {
 	builder.WriteString("}\n")
 
 	return builder.String(), nil
+}
+
+func (c *cEmitter) emitLabelsMap(
+	builder *strings.Builder,
+	nodes []*domain.Node,
+	indent int,
+) {
+	c.writeIndent(builder, indent)
+	builder.WriteString("LabelMap labels[] = {\n")
+
+	for _, node := range nodes {
+		c.writeIndent(builder, indent+1)
+		if node.Type == domain.LineNode && node.Children[0].Type == domain.NumberNode {
+			lineValue := node.Children[0].Token.Value
+			builder.WriteString("{" + lineValue + ", &&label_" + lineValue + "},\n")
+		}
+	}
+
+	c.writeIndent(builder, indent)
+	builder.WriteString("};\n")
+	c.writeIndent(builder, indent)
+	builder.WriteString("int numLabels = sizeof(labels) / sizeof(labels[0]);\n")
+}
+
+func (c *cEmitter) emitMultipleNodes(
+	builder *strings.Builder,
+	nodes []*domain.Node,
+	previousIdentifiers *utils.Set[domain.Token],
+	indent int,
+) error {
+	for _, child := range nodes {
+		err := c.emitNode(builder, child, previousIdentifiers, indent)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (c *cEmitter) emitNode(
@@ -183,9 +239,15 @@ func (c *cEmitter) emitStatementNode(
 		if err != nil {
 			return err
 		}
-		builder.WriteString(stringToken + " label_")
+		builder.WriteString(stringToken + " *find_label(")
 
-		return c.emitNode(builder, node.Children[1], previousIdentifiers, indent)
+		if err := c.emitNode(builder, node.Children[1], previousIdentifiers, indent); err != nil {
+			return err
+		}
+
+		builder.WriteString(", labels, numLabels)")
+
+		return nil
 
 	case domain.Input:
 		builder.WriteString("int ")
@@ -288,21 +350,6 @@ func (c *cEmitter) emitStatementNode(
 		return c.emitMultipleNodes(builder, node.Children, previousIdentifiers, indent)
 	}
 
-	return nil
-}
-
-func (c *cEmitter) emitMultipleNodes(
-	builder *strings.Builder,
-	nodes []*domain.Node,
-	previousIdentifiers *utils.Set[domain.Token],
-	indent int,
-) error {
-	for _, child := range nodes {
-		err := c.emitNode(builder, child, previousIdentifiers, indent)
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
