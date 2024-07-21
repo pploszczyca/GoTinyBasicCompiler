@@ -29,17 +29,16 @@ func (c *cEmitter) Emit(programTree *domain.ProgramTree) (string, error) {
 	builder.WriteString(`#include <stdio.h>
 
 typedef struct {
-    int lineNumber;
-    void *labelAddr;
+	int lineNumber;
+	void *labelAddr;
 } LabelMap;
 
 void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
-    for (int i = 0; i < numLabels; ++i) {
-        if (labels[i].lineNumber == lineNumber) {
-            return labels[i].labelAddr;
-        }
-    }
-    return &&default_label_addr;
+	for (int i = 0; i < numLabels; ++i) {
+		if (labels[i].lineNumber == lineNumber) {
+			return labels[i].labelAddr;
+		}
+	}
 }
 
 int main() {
@@ -368,5 +367,5 @@ func (c *cEmitter) shouldWriteEndLine(node *domain.Node) bool {
 }
 
 func (c *cEmitter) writeIndent(builder *strings.Builder, indent int) {
-	builder.WriteString(strings.Repeat("    ", indent))
+	builder.WriteString(strings.Repeat("\t", indent))
 }

@@ -19,7 +19,24 @@ func TestCEmitter_Emit(t *testing.T) {
 			name:        "returns C empty program when program tree is empty",
 			programTree: &domain.ProgramTree{},
 			expectedResult: `#include <stdio.h>
+
+typedef struct {
+	int lineNumber;
+	void *labelAddr;
+} LabelMap;
+
+void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
+	for (int i = 0; i < numLabels; ++i) {
+		if (labels[i].lineNumber == lineNumber) {
+			return labels[i].labelAddr;
+		}
+	}
+}
+
 int main() {
+	LabelMap labels[] = {
+	};
+	int numLabels = sizeof(labels) / sizeof(labels[0]);
 }
 `,
 			tokenEmitter: &testutils.FakeTokenEmitter{},
@@ -38,9 +55,27 @@ int main() {
 				},
 			},
 			expectedResult: `#include <stdio.h>
+
+typedef struct {
+	int lineNumber;
+	void *labelAddr;
+} LabelMap;
+
+void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
+	for (int i = 0; i < numLabels; ++i) {
+		if (labels[i].lineNumber == lineNumber) {
+			return labels[i].labelAddr;
+		}
+	}
+}
+
 int main() {
-    label_10:
-    return 0;
+	LabelMap labels[] = {
+		{10, &&label_10},
+	};
+	int numLabels = sizeof(labels) / sizeof(labels[0]);
+	label_10:
+	return 0;
 }
 `,
 			tokenEmitter: NewCTokenEmitter(),
@@ -81,9 +116,27 @@ int main() {
 				},
 			},
 			expectedResult: `#include <stdio.h>
+
+typedef struct {
+	int lineNumber;
+	void *labelAddr;
+} LabelMap;
+
+void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
+	for (int i = 0; i < numLabels; ++i) {
+		if (labels[i].lineNumber == lineNumber) {
+			return labels[i].labelAddr;
+		}
+	}
+}
+
 int main() {
-    label_10:
-    printf("%s%d%d\n", "Hello", A, 1+2);
+	LabelMap labels[] = {
+		{10, &&label_10},
+	};
+	int numLabels = sizeof(labels) / sizeof(labels[0]);
+	label_10:
+	printf("%s%d%d\n", "Hello", A, 1+2);
 }
 `,
 			tokenEmitter: NewCTokenEmitter(),
@@ -138,9 +191,27 @@ int main() {
 				},
 			},
 			expectedResult: `#include <stdio.h>
+
+typedef struct {
+	int lineNumber;
+	void *labelAddr;
+} LabelMap;
+
+void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
+	for (int i = 0; i < numLabels; ++i) {
+		if (labels[i].lineNumber == lineNumber) {
+			return labels[i].labelAddr;
+		}
+	}
+}
+
 int main() {
-    label_10:
-    if (A<5) printf("%s\n", "Hello");
+	LabelMap labels[] = {
+		{10, &&label_10},
+	};
+	int numLabels = sizeof(labels) / sizeof(labels[0]);
+	label_10:
+	if (A<5) printf("%s\n", "Hello");
 }
 `,
 			tokenEmitter: NewCTokenEmitter(),
@@ -180,9 +251,27 @@ int main() {
 				},
 			},
 			expectedResult: `#include <stdio.h>
+
+typedef struct {
+	int lineNumber;
+	void *labelAddr;
+} LabelMap;
+
+void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
+	for (int i = 0; i < numLabels; ++i) {
+		if (labels[i].lineNumber == lineNumber) {
+			return labels[i].labelAddr;
+		}
+	}
+}
+
 int main() {
-    label_10:
-    goto label_20;
+	LabelMap labels[] = {
+		{10, &&label_10},
+	};
+	int numLabels = sizeof(labels) / sizeof(labels[0]);
+	label_10:
+	goto *find_label(20, labels, numLabels);
 }
 `,
 			tokenEmitter: NewCTokenEmitter(),
@@ -214,10 +303,28 @@ int main() {
 				},
 			},
 			expectedResult: `#include <stdio.h>
+
+typedef struct {
+	int lineNumber;
+	void *labelAddr;
+} LabelMap;
+
+void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
+	for (int i = 0; i < numLabels; ++i) {
+		if (labels[i].lineNumber == lineNumber) {
+			return labels[i].labelAddr;
+		}
+	}
+}
+
 int main() {
-    label_10:
-    int A, B;
-    scanf("%d,%d", &A, &B);
+	LabelMap labels[] = {
+		{10, &&label_10},
+	};
+	int numLabels = sizeof(labels) / sizeof(labels[0]);
+	label_10:
+	int A, B;
+	scanf("%d,%d", &A, &B);
 }
 `,
 			tokenEmitter: NewCTokenEmitter(),
@@ -259,11 +366,30 @@ int main() {
 				},
 			},
 			expectedResult: `#include <stdio.h>
+
+typedef struct {
+	int lineNumber;
+	void *labelAddr;
+} LabelMap;
+
+void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
+	for (int i = 0; i < numLabels; ++i) {
+		if (labels[i].lineNumber == lineNumber) {
+			return labels[i].labelAddr;
+		}
+	}
+}
+
 int main() {
-    label_10:
-    int A = 1;
-    label_20:
-    A = 2;
+	LabelMap labels[] = {
+		{10, &&label_10},
+		{20, &&label_20},
+	};
+	int numLabels = sizeof(labels) / sizeof(labels[0]);
+	label_10:
+	int A = 1;
+	label_20:
+	A = 2;
 }
 `,
 			tokenEmitter: NewCTokenEmitter(),
@@ -350,15 +476,36 @@ int main() {
 				},
 			},
 			expectedResult: `#include <stdio.h>
+
+typedef struct {
+	int lineNumber;
+	void *labelAddr;
+} LabelMap;
+
+void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
+	for (int i = 0; i < numLabels; ++i) {
+		if (labels[i].lineNumber == lineNumber) {
+			return labels[i].labelAddr;
+		}
+	}
+}
+
 int main() {
-    label_10:
-    while (A<5) {
-    label_20:
-    printf("%s\n", "Hello");
-    label_30:
-    A = 1;
-    label_40:
-    }
+	LabelMap labels[] = {
+		{10, &&label_10},
+		{20, &&label_20},
+		{30, &&label_30},
+		{40, &&label_40},
+	};
+	int numLabels = sizeof(labels) / sizeof(labels[0]);
+	label_10:
+	while (A<5) {
+	label_20:
+	printf("%s\n", "Hello");
+	label_30:
+	A = 1;
+	label_40:
+	}
 }
 `,
 			tokenEmitter: NewCTokenEmitter(),
@@ -418,13 +565,33 @@ int main() {
 				},
 			},
 			expectedResult: `#include <stdio.h>
+
+typedef struct {
+	int lineNumber;
+	void *labelAddr;
+} LabelMap;
+
+void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
+	for (int i = 0; i < numLabels; ++i) {
+		if (labels[i].lineNumber == lineNumber) {
+			return labels[i].labelAddr;
+		}
+	}
+}
+
 int main() {
-    label_10:
-    for (int I = 1; I <= 5; I++) {
-    label_20:
-    printf("%s\n", "Hello");
-    label_30:
-    }
+	LabelMap labels[] = {
+		{10, &&label_10},
+		{20, &&label_20},
+		{30, &&label_30},
+	};
+	int numLabels = sizeof(labels) / sizeof(labels[0]);
+	label_10:
+	for (int I = 1; I <= 5; I++) {
+	label_20:
+	printf("%s\n", "Hello");
+	label_30:
+	}
 }
 `,
 			tokenEmitter: NewCTokenEmitter(),
