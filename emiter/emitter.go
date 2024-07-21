@@ -13,6 +13,17 @@ type Emitter interface {
 
 type cEmitter struct {
 	tokenEmitter TokenEmitter
+	cUtils       string
+}
+
+func NewTestedCTokenEmitter(
+	tokenEmitter TokenEmitter,
+	cUtils string,
+) Emitter {
+	return &cEmitter{
+		tokenEmitter: tokenEmitter,
+		cUtils:       cUtils,
+	}
 }
 
 func NewCEmitter(
@@ -20,17 +31,7 @@ func NewCEmitter(
 ) Emitter {
 	return &cEmitter{
 		tokenEmitter: tokenEmitter,
-	}
-}
-
-func (c *cEmitter) Emit(programTree *domain.ProgramTree) (string, error) {
-	var builder strings.Builder
-	previousIdentifiers := utils.NewSet[domain.Token]()
-	goSubIndex := 0
-
-	builder.WriteString(`#include <stdio.h>
-
-typedef struct {
+		cUtils: `typedef struct {
 	int lineNumber;
 	void *labelAddr;
 } LabelMap;
@@ -43,29 +44,25 @@ void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
 	}
 }
 
-#define MAX 100 // Define the maximum size of the stack
+#define MAX 100
 
 typedef struct {
     int top;
-    void* items[MAX]; // Array to store label addresses
+    void* items[MAX];
 } Stack;
 
-// Initialize the stack
 void initStack(Stack* s) {
     s->top = -1;
 }
 
-// Check if the stack is empty
 int isEmpty(Stack* s) {
     return s->top == -1;
 }
 
-// Check if the stack is full
 int isFull(Stack* s) {
     return s->top == MAX - 1;
 }
 
-// Push a label onto the stack
 void push(Stack* s, void* label) {
     if (isFull(s)) {
         return;
@@ -73,26 +70,34 @@ void push(Stack* s, void* label) {
     s->items[++(s->top)] = label;
 }
 
-// Pop a label from the stack
 void* pop(Stack* s) {
     if (isEmpty(s)) {
-        return NULL; // Return NULL to indicate stack is empty
+        return NULL;
     }
     return s->items[(s->top)--];
 }
 
-// Peek at the top label of the stack without removing it
 void* peek(Stack* s) {
     if (isEmpty(s)) {
-        return NULL; // Return NULL to indicate stack is empty
+        return NULL;
     }
     return s->items[s->top];
 }
 
+`,
+	}
+}
 
-int main() {
+func (c *cEmitter) Emit(programTree *domain.ProgramTree) (string, error) {
+	var builder strings.Builder
+	previousIdentifiers := utils.NewSet[domain.Token]()
+	goSubIndex := 0
+
+	builder.WriteString("#include <stdio.h>\n\n")
+	builder.WriteString(c.cUtils)
+	builder.WriteString(`int main() {
 	Stack gosubStack;
-    initStack(&gosubStack);
+	initStack(&gosubStack);
 `)
 
 	c.emitLabelsMap(&builder, programTree.Nodes, 1)
@@ -417,10 +422,10 @@ func (c *cEmitter) emitStatementNode(
 
 		builder.WriteString(", labels, numLabels);\n")
 		c.writeIndent(builder, indent)
-		builder.WriteString("label_gosub_" + strconv.Itoa(*goSubIndex) + ": ")
+		builder.WriteString("label_gosub_" + strconv.Itoa(*goSubIndex) + ":")
 
 	case domain.Return:
-		builder.WriteString("goto *pop(&gosubStack);")
+		builder.WriteString("goto *pop(&gosubStack)")
 
 	default:
 		return c.emitMultipleNodes(builder, node.Children, previousIdentifiers, indent, goSubIndex)
@@ -432,7 +437,7 @@ func (c *cEmitter) emitStatementNode(
 func (c *cEmitter) shouldWriteEndLine(node *domain.Node) bool {
 	if node.IsLeaf() {
 		tokenType := node.Token.Type
-		return tokenType != domain.While && tokenType != domain.Wend && tokenType != domain.Next && tokenType != domain.For
+		return tokenType != domain.While && tokenType != domain.Wend && tokenType != domain.Next && tokenType != domain.For && tokenType != domain.Gosub
 	}
 
 	for _, child := range node.Children {

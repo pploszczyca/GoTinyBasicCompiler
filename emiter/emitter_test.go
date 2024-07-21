@@ -20,20 +20,9 @@ func TestCEmitter_Emit(t *testing.T) {
 			programTree: &domain.ProgramTree{},
 			expectedResult: `#include <stdio.h>
 
-typedef struct {
-	int lineNumber;
-	void *labelAddr;
-} LabelMap;
-
-void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
-	for (int i = 0; i < numLabels; ++i) {
-		if (labels[i].lineNumber == lineNumber) {
-			return labels[i].labelAddr;
-		}
-	}
-}
-
 int main() {
+	Stack gosubStack;
+	initStack(&gosubStack);
 	LabelMap labels[] = {
 	};
 	int numLabels = sizeof(labels) / sizeof(labels[0]);
@@ -56,20 +45,9 @@ int main() {
 			},
 			expectedResult: `#include <stdio.h>
 
-typedef struct {
-	int lineNumber;
-	void *labelAddr;
-} LabelMap;
-
-void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
-	for (int i = 0; i < numLabels; ++i) {
-		if (labels[i].lineNumber == lineNumber) {
-			return labels[i].labelAddr;
-		}
-	}
-}
-
 int main() {
+	Stack gosubStack;
+	initStack(&gosubStack);
 	LabelMap labels[] = {
 		{10, &&label_10},
 	};
@@ -117,20 +95,9 @@ int main() {
 			},
 			expectedResult: `#include <stdio.h>
 
-typedef struct {
-	int lineNumber;
-	void *labelAddr;
-} LabelMap;
-
-void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
-	for (int i = 0; i < numLabels; ++i) {
-		if (labels[i].lineNumber == lineNumber) {
-			return labels[i].labelAddr;
-		}
-	}
-}
-
 int main() {
+	Stack gosubStack;
+	initStack(&gosubStack);
 	LabelMap labels[] = {
 		{10, &&label_10},
 	};
@@ -192,20 +159,9 @@ int main() {
 			},
 			expectedResult: `#include <stdio.h>
 
-typedef struct {
-	int lineNumber;
-	void *labelAddr;
-} LabelMap;
-
-void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
-	for (int i = 0; i < numLabels; ++i) {
-		if (labels[i].lineNumber == lineNumber) {
-			return labels[i].labelAddr;
-		}
-	}
-}
-
 int main() {
+	Stack gosubStack;
+	initStack(&gosubStack);
 	LabelMap labels[] = {
 		{10, &&label_10},
 	};
@@ -252,20 +208,9 @@ int main() {
 			},
 			expectedResult: `#include <stdio.h>
 
-typedef struct {
-	int lineNumber;
-	void *labelAddr;
-} LabelMap;
-
-void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
-	for (int i = 0; i < numLabels; ++i) {
-		if (labels[i].lineNumber == lineNumber) {
-			return labels[i].labelAddr;
-		}
-	}
-}
-
 int main() {
+	Stack gosubStack;
+	initStack(&gosubStack);
 	LabelMap labels[] = {
 		{10, &&label_10},
 	};
@@ -304,20 +249,9 @@ int main() {
 			},
 			expectedResult: `#include <stdio.h>
 
-typedef struct {
-	int lineNumber;
-	void *labelAddr;
-} LabelMap;
-
-void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
-	for (int i = 0; i < numLabels; ++i) {
-		if (labels[i].lineNumber == lineNumber) {
-			return labels[i].labelAddr;
-		}
-	}
-}
-
 int main() {
+	Stack gosubStack;
+	initStack(&gosubStack);
 	LabelMap labels[] = {
 		{10, &&label_10},
 	};
@@ -367,20 +301,9 @@ int main() {
 			},
 			expectedResult: `#include <stdio.h>
 
-typedef struct {
-	int lineNumber;
-	void *labelAddr;
-} LabelMap;
-
-void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
-	for (int i = 0; i < numLabels; ++i) {
-		if (labels[i].lineNumber == lineNumber) {
-			return labels[i].labelAddr;
-		}
-	}
-}
-
 int main() {
+	Stack gosubStack;
+	initStack(&gosubStack);
 	LabelMap labels[] = {
 		{10, &&label_10},
 		{20, &&label_20},
@@ -477,20 +400,9 @@ int main() {
 			},
 			expectedResult: `#include <stdio.h>
 
-typedef struct {
-	int lineNumber;
-	void *labelAddr;
-} LabelMap;
-
-void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
-	for (int i = 0; i < numLabels; ++i) {
-		if (labels[i].lineNumber == lineNumber) {
-			return labels[i].labelAddr;
-		}
-	}
-}
-
 int main() {
+	Stack gosubStack;
+	initStack(&gosubStack);
 	LabelMap labels[] = {
 		{10, &&label_10},
 		{20, &&label_20},
@@ -566,20 +478,9 @@ int main() {
 			},
 			expectedResult: `#include <stdio.h>
 
-typedef struct {
-	int lineNumber;
-	void *labelAddr;
-} LabelMap;
-
-void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
-	for (int i = 0; i < numLabels; ++i) {
-		if (labels[i].lineNumber == lineNumber) {
-			return labels[i].labelAddr;
-		}
-	}
-}
-
 int main() {
+	Stack gosubStack;
+	initStack(&gosubStack);
 	LabelMap labels[] = {
 		{10, &&label_10},
 		{20, &&label_20},
@@ -596,11 +497,79 @@ int main() {
 `,
 			tokenEmitter: NewCTokenEmitter(),
 		},
+		{
+			name: "returns C program with gosub statement",
+			programTree: &domain.ProgramTree{
+				Nodes: []*domain.Node{
+					{
+						Type: domain.LineNode,
+						Children: []*domain.Node{
+							{Type: domain.NumberNode, Token: domain.Token{Type: domain.Number, Value: "10"}},
+							{
+								Type: domain.StatementNode,
+								Children: []*domain.Node{
+									{Token: domain.Token{Type: domain.Gosub}},
+									{Type: domain.ExpressionNode, Children: []*domain.Node{{Token: domain.Token{Type: domain.Number, Value: "20"}}}},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedResult: `#include <stdio.h>
+
+int main() {
+	Stack gosubStack;
+	initStack(&gosubStack);
+	LabelMap labels[] = {
+		{10, &&label_10},
+	};
+	int numLabels = sizeof(labels) / sizeof(labels[0]);
+	label_10:
+	push(&gosubStack, &&label_gosub_1);
+	goto *find_label(20, labels, numLabels);
+	label_gosub_1:
+}
+`,
+			tokenEmitter: NewCTokenEmitter(),
+		},
+		{
+			name: "returns C program with return statement",
+			programTree: &domain.ProgramTree{
+				Nodes: []*domain.Node{
+					{
+						Type: domain.LineNode,
+						Children: []*domain.Node{
+							{Type: domain.NumberNode, Token: domain.Token{Type: domain.Number, Value: "10"}},
+							{
+								Type: domain.StatementNode,
+								Children: []*domain.Node{
+									{Token: domain.Token{Type: domain.Return}},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedResult: `#include <stdio.h>
+
+int main() {
+	Stack gosubStack;
+	initStack(&gosubStack);
+	LabelMap labels[] = {
+		{10, &&label_10},
+	};
+	int numLabels = sizeof(labels) / sizeof(labels[0]);
+	label_10:
+	goto *pop(&gosubStack);
+}
+`,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			emitter := NewCEmitter(tt.tokenEmitter)
+			emitter := NewTestedCTokenEmitter(tt.tokenEmitter, "")
 			result, err := emitter.Emit(tt.programTree)
 
 			if err != nil {
@@ -635,6 +604,34 @@ int main() {
 
 		if !errors.Is(err, fakeError) {
 			t.Errorf("Expected error: %s, but got: %s\n", fakeError, err)
+		}
+	})
+
+	t.Run("sets extra utils when creating emitter", func(t *testing.T) {
+		utils := "utils\n"
+		expectedResult := `#include <stdio.h>
+
+utils
+int main() {
+	Stack gosubStack;
+	initStack(&gosubStack);
+	LabelMap labels[] = {
+	};
+	int numLabels = sizeof(labels) / sizeof(labels[0]);
+}
+`
+
+		tokenEmitter := NewCTokenEmitter()
+		emitter := NewTestedCTokenEmitter(tokenEmitter, utils)
+
+		actual, err := emitter.Emit(&domain.ProgramTree{})
+
+		if err != nil {
+			t.Errorf("Error: %s\n", err)
+		}
+
+		if actual != expectedResult {
+			t.Errorf("Expected: \n%s, but got: \n%s\n", expectedResult, actual)
 		}
 	})
 }

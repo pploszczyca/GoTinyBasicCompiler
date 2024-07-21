@@ -13,29 +13,25 @@ void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
 	}
 }
 
-#define MAX 100 // Define the maximum size of the stack
+#define MAX 100
 
 typedef struct {
     int top;
-    void* items[MAX]; // Array to store label addresses
+    void* items[MAX];
 } Stack;
 
-// Initialize the stack
 void initStack(Stack* s) {
     s->top = -1;
 }
 
-// Check if the stack is empty
 int isEmpty(Stack* s) {
     return s->top == -1;
 }
 
-// Check if the stack is full
 int isFull(Stack* s) {
     return s->top == MAX - 1;
 }
 
-// Push a label onto the stack
 void push(Stack* s, void* label) {
     if (isFull(s)) {
         return;
@@ -43,26 +39,23 @@ void push(Stack* s, void* label) {
     s->items[++(s->top)] = label;
 }
 
-// Pop a label from the stack
 void* pop(Stack* s) {
     if (isEmpty(s)) {
-        return NULL; // Return NULL to indicate stack is empty
+        return NULL;
     }
     return s->items[(s->top)--];
 }
 
-// Peek at the top label of the stack without removing it
 void* peek(Stack* s) {
     if (isEmpty(s)) {
-        return NULL; // Return NULL to indicate stack is empty
+        return NULL;
     }
     return s->items[s->top];
 }
 
-
 int main() {
 	Stack gosubStack;
-    initStack(&gosubStack);
+	initStack(&gosubStack);
 	LabelMap labels[] = {
 		{10, &&label_10},
 		{20, &&label_20},
