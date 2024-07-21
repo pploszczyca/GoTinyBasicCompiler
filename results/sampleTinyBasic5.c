@@ -66,28 +66,40 @@ int main() {
 	LabelMap labels[] = {
 		{10, &&label_10},
 		{20, &&label_20},
-		{30, &&label_30},
-		{40, &&label_40},
-		{50, &&label_50},
-		{60, &&label_60},
-		{70, &&label_70},
-		{80, &&label_80},
+		{100, &&label_100},
+		{110, &&label_110},
+		{120, &&label_120},
+		{1000, &&label_1000},
+		{1010, &&label_1010},
+		{1020, &&label_1020},
+		{2000, &&label_2000},
+		{2010, &&label_2010},
 	};
 	int numLabels = sizeof(labels) / sizeof(labels[0]);
 	label_10:
-	printf("%s\n", "WHILE LOOP EXAMPLE");
+	push(&gosubStack, &&label_gosub_1);
+	goto *find_label(100, labels, numLabels);
+	label_gosub_1: ;
 	label_20:
-	int A = 1;
-	label_30:
-	while (A<=5) {
-	label_40:
-	printf("%s%d\n", "A = ", A);
-	label_50:
-	A = A+1;
-	label_60:
-	}
-	label_70:
-	printf("%s\n", "PROGRAM END");
-	label_80:
 	return 0;
+	label_100:
+	push(&gosubStack, &&label_gosub_2);
+	goto *find_label(1000, labels, numLabels);
+	label_gosub_2: ;
+	label_110:
+	printf("%s\n", "END GOSUB 1000");
+	label_120:
+	goto *pop(&gosubStack);;
+	label_1000:
+	push(&gosubStack, &&label_gosub_3);
+	goto *find_label(2000, labels, numLabels);
+	label_gosub_3: ;
+	label_1010:
+	printf("%s\n", "END GOSUB 2000");
+	label_1020:
+	goto *pop(&gosubStack);;
+	label_2000:
+	printf("%s\n", "HELLO, WORLD!");
+	label_2010:
+	goto *pop(&gosubStack);;
 }

@@ -74,7 +74,8 @@ func (c *cTokenEmitter) Emit(token domain.Token) (string, error) {
 		return "}", nil
 	case domain.To:
 		return "", nil
-
+	case domain.Gosub:
+		return "goto", nil
 	}
 
 	return "", fmt.Errorf("Unknown token type: %s\n", token.Type)

@@ -16,7 +16,7 @@ CHMOD=chmod +x
 GCC=gcc
 
 # Sample files
-SAMPLES=sampleTinyBasic sampleTinyBasic2 sampleTinyBasic3 sampleTinyBasic4
+SAMPLES=sampleTinyBasic sampleTinyBasic2 sampleTinyBasic3 sampleTinyBasic4 sampleTinyBasic5
 
 # Targets
 .PHONY: all build clean test format vet run buildSamples buildAndRunSamples

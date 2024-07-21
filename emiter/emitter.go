@@ -3,6 +3,7 @@ package emiter
 import (
 	"GoTinyBasicCompiler/domain"
 	"GoTinyBasicCompiler/utils"
+	"strconv"
 	"strings"
 )
 
@@ -25,6 +26,7 @@ func NewCEmitter(
 func (c *cEmitter) Emit(programTree *domain.ProgramTree) (string, error) {
 	var builder strings.Builder
 	previousIdentifiers := utils.NewSet[domain.Token]()
+	goSubIndex := 0
 
 	builder.WriteString(`#include <stdio.h>
 
@@ -41,12 +43,61 @@ void* find_label(int lineNumber, LabelMap labels[], int numLabels) {
 	}
 }
 
+#define MAX 100 // Define the maximum size of the stack
+
+typedef struct {
+    int top;
+    void* items[MAX]; // Array to store label addresses
+} Stack;
+
+// Initialize the stack
+void initStack(Stack* s) {
+    s->top = -1;
+}
+
+// Check if the stack is empty
+int isEmpty(Stack* s) {
+    return s->top == -1;
+}
+
+// Check if the stack is full
+int isFull(Stack* s) {
+    return s->top == MAX - 1;
+}
+
+// Push a label onto the stack
+void push(Stack* s, void* label) {
+    if (isFull(s)) {
+        return;
+    }
+    s->items[++(s->top)] = label;
+}
+
+// Pop a label from the stack
+void* pop(Stack* s) {
+    if (isEmpty(s)) {
+        return NULL; // Return NULL to indicate stack is empty
+    }
+    return s->items[(s->top)--];
+}
+
+// Peek at the top label of the stack without removing it
+void* peek(Stack* s) {
+    if (isEmpty(s)) {
+        return NULL; // Return NULL to indicate stack is empty
+    }
+    return s->items[s->top];
+}
+
+
 int main() {
+	Stack gosubStack;
+    initStack(&gosubStack);
 `)
 
 	c.emitLabelsMap(&builder, programTree.Nodes, 1)
 
-	err := c.emitMultipleNodes(&builder, programTree.Nodes, previousIdentifiers, 1)
+	err := c.emitMultipleNodes(&builder, programTree.Nodes, previousIdentifiers, 1, &goSubIndex)
 	if err != nil {
 		return "", err
 	}
@@ -83,9 +134,10 @@ func (c *cEmitter) emitMultipleNodes(
 	nodes []*domain.Node,
 	previousIdentifiers *utils.Set[domain.Token],
 	indent int,
+	goSubIndex *int,
 ) error {
 	for _, child := range nodes {
-		err := c.emitNode(builder, child, previousIdentifiers, indent)
+		err := c.emitNode(builder, child, previousIdentifiers, indent, goSubIndex)
 		if err != nil {
 			return err
 		}
@@ -98,6 +150,7 @@ func (c *cEmitter) emitNode(
 	node *domain.Node,
 	previousIdentifiers *utils.Set[domain.Token],
 	indent int,
+	goSubIndex *int,
 ) error {
 	if node.IsLeaf() {
 		stringToken, err := c.tokenEmitter.Emit(node.Token)
@@ -115,25 +168,25 @@ func (c *cEmitter) emitNode(
 
 	switch node.Type {
 	case domain.LineNode:
-		return c.emitLineNode(builder, node, previousIdentifiers, indent)
+		return c.emitLineNode(builder, node, previousIdentifiers, indent, goSubIndex)
 	case domain.ProgramNode:
 	case domain.StatementNode:
-		return c.emitStatementNode(builder, node, previousIdentifiers, indent)
+		return c.emitStatementNode(builder, node, previousIdentifiers, indent, goSubIndex)
 	case domain.ExpressionNode:
-		return c.emitMultipleNodes(builder, node.Children, previousIdentifiers, indent)
+		return c.emitMultipleNodes(builder, node.Children, previousIdentifiers, indent, goSubIndex)
 	case domain.NumberNode:
 	case domain.IdentifierNode:
 	case domain.OperatorNode:
 	case domain.ExpressionListNode:
-		return c.emitMultipleNodes(builder, node.Children, previousIdentifiers, indent)
+		return c.emitMultipleNodes(builder, node.Children, previousIdentifiers, indent, goSubIndex)
 	case domain.TermNode:
-		return c.emitMultipleNodes(builder, node.Children, previousIdentifiers, indent)
+		return c.emitMultipleNodes(builder, node.Children, previousIdentifiers, indent, goSubIndex)
 	case domain.FactorNode:
-		return c.emitMultipleNodes(builder, node.Children, previousIdentifiers, indent)
+		return c.emitMultipleNodes(builder, node.Children, previousIdentifiers, indent, goSubIndex)
 	case domain.RelopNode:
-		return c.emitMultipleNodes(builder, node.Children, previousIdentifiers, indent)
+		return c.emitMultipleNodes(builder, node.Children, previousIdentifiers, indent, goSubIndex)
 	case domain.VarListNode:
-		return c.emitMultipleNodes(builder, node.Children, previousIdentifiers, indent)
+		return c.emitMultipleNodes(builder, node.Children, previousIdentifiers, indent, goSubIndex)
 	}
 
 	return nil
@@ -144,6 +197,7 @@ func (c *cEmitter) emitLineNode(
 	node *domain.Node,
 	previousIdentifiers *utils.Set[domain.Token],
 	indent int,
+	goSubIndex *int,
 ) error {
 	statementIndex := 0
 	c.writeIndent(builder, indent)
@@ -153,7 +207,7 @@ func (c *cEmitter) emitLineNode(
 		c.writeIndent(builder, indent)
 	}
 
-	err := c.emitMultipleNodes(builder, node.Children[statementIndex:], previousIdentifiers, indent)
+	err := c.emitMultipleNodes(builder, node.Children[statementIndex:], previousIdentifiers, indent, goSubIndex)
 	if err != nil {
 		return err
 	}
@@ -170,6 +224,7 @@ func (c *cEmitter) emitStatementNode(
 	node *domain.Node,
 	previousIdentifiers *utils.Set[domain.Token],
 	indent int,
+	goSubIndex *int,
 ) error {
 	switch node.Children[0].Token.Type {
 	case domain.Print:
@@ -190,7 +245,7 @@ func (c *cEmitter) emitStatementNode(
 
 		builder.WriteString("\\n\", ")
 
-		err = c.emitNode(builder, expressionListNode, previousIdentifiers, indent)
+		err = c.emitNode(builder, expressionListNode, previousIdentifiers, indent, goSubIndex)
 		if err != nil {
 			return err
 		}
@@ -206,7 +261,7 @@ func (c *cEmitter) emitStatementNode(
 
 		children := node.Children[childIndex:]
 		for index, child := range children {
-			err := c.emitNode(builder, child, previousIdentifiers, indent)
+			err := c.emitNode(builder, child, previousIdentifiers, indent, goSubIndex)
 			if err != nil {
 				return err
 			}
@@ -226,7 +281,7 @@ func (c *cEmitter) emitStatementNode(
 			if child.Token.Type == domain.Then {
 				builder.WriteString(") ")
 			} else {
-				err := c.emitNode(builder, child, previousIdentifiers, indent)
+				err := c.emitNode(builder, child, previousIdentifiers, indent, goSubIndex)
 				if err != nil {
 					return err
 				}
@@ -240,7 +295,7 @@ func (c *cEmitter) emitStatementNode(
 		}
 		builder.WriteString(stringToken + " *find_label(")
 
-		if err := c.emitNode(builder, node.Children[1], previousIdentifiers, indent); err != nil {
+		if err := c.emitNode(builder, node.Children[1], previousIdentifiers, indent, goSubIndex); err != nil {
 			return err
 		}
 
@@ -253,7 +308,7 @@ func (c *cEmitter) emitStatementNode(
 		inputNode := node.Children[0]
 		varListNode := node.Children[1]
 
-		err := c.emitMultipleNodes(builder, varListNode.Children, previousIdentifiers, indent)
+		err := c.emitMultipleNodes(builder, varListNode.Children, previousIdentifiers, indent, goSubIndex)
 		if err != nil {
 			return err
 		}
@@ -281,7 +336,7 @@ func (c *cEmitter) emitStatementNode(
 			if child.Token.Type != domain.Comma {
 				builder.WriteString("&")
 			}
-			err := c.emitNode(builder, child, previousIdentifiers, indent)
+			err := c.emitNode(builder, child, previousIdentifiers, indent, goSubIndex)
 			if err != nil {
 				return err
 			}
@@ -295,7 +350,7 @@ func (c *cEmitter) emitStatementNode(
 		}
 
 		builder.WriteString(stringToken + " (")
-		err = c.emitMultipleNodes(builder, node.Children[1:], previousIdentifiers, indent)
+		err = c.emitMultipleNodes(builder, node.Children[1:], previousIdentifiers, indent, goSubIndex)
 		if err != nil {
 			return err
 		}
@@ -319,7 +374,7 @@ func (c *cEmitter) emitStatementNode(
 		}
 
 		var fromStringBuilder strings.Builder
-		if err := c.emitNode(&fromStringBuilder, node.Children[3], previousIdentifiers, indent); err != nil {
+		if err := c.emitNode(&fromStringBuilder, node.Children[3], previousIdentifiers, indent, goSubIndex); err != nil {
 			return err
 		}
 
@@ -329,7 +384,7 @@ func (c *cEmitter) emitStatementNode(
 		}
 
 		var toStringBuilder strings.Builder
-		if err := c.emitNode(&toStringBuilder, node.Children[5], previousIdentifiers, indent); err != nil {
+		if err := c.emitNode(&toStringBuilder, node.Children[5], previousIdentifiers, indent, goSubIndex); err != nil {
 			return err
 		}
 
@@ -345,8 +400,30 @@ func (c *cEmitter) emitStatementNode(
 		}
 		builder.WriteString(stringToken)
 
+	case domain.Gosub:
+		stringToken, err := c.tokenEmitter.Emit(node.Children[0].Token)
+		if err != nil {
+			return err
+		}
+		*goSubIndex = *goSubIndex + 1
+		builder.WriteString("push(&gosubStack, &&label_gosub_" + strconv.Itoa(*goSubIndex) + ");\n")
+		c.writeIndent(builder, indent)
+
+		builder.WriteString(stringToken + " *find_label(")
+
+		if err := c.emitNode(builder, node.Children[1], previousIdentifiers, indent, goSubIndex); err != nil {
+			return err
+		}
+
+		builder.WriteString(", labels, numLabels);\n")
+		c.writeIndent(builder, indent)
+		builder.WriteString("label_gosub_" + strconv.Itoa(*goSubIndex) + ": ")
+
+	case domain.Return:
+		builder.WriteString("goto *pop(&gosubStack);")
+
 	default:
-		return c.emitMultipleNodes(builder, node.Children, previousIdentifiers, indent)
+		return c.emitMultipleNodes(builder, node.Children, previousIdentifiers, indent, goSubIndex)
 	}
 
 	return nil
