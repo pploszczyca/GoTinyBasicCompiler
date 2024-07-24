@@ -42,7 +42,7 @@ vet:
 	$(GO_VET) ./...
 
 run: build
-	$(BUILD_DIR)/$(BINARY_NAME) ./input.txt ./output.txt
+	$(BUILD_DIR)/$(BINARY_NAME) $(ARGS)
 
 buildSamples: build
 	@for sample in $(SAMPLES); do \
